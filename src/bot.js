@@ -5,7 +5,9 @@ import {STORE} from './modules/variables'
 import changeAccountData from './modules/changeAccountData'
 import {botOptions} from './modules/keyboards'
 import leaveReview from './modules/leaveReview'
-
+// import sequelize from '../db/db'
+const sequelize = require('../db/db')
+const models = require('../db/models/models')
 
 export default class Bot {
   constructor(token) {
@@ -13,7 +15,15 @@ export default class Bot {
     this.website = STORE
   }
 
-  start() {
+  async start() {
+
+    try {
+      await sequelize.authenticate()
+      await sequelize.sync()
+    } catch (e) {
+      console.log('Подключение к DB сломалось', e)
+    }
+
     this.client.on('message', async (message) => {
       const chatId = message.chat.id
       const text = message.text

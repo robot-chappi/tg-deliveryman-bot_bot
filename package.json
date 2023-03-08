@@ -19,7 +19,10 @@
     "babel-register": "^6.9.0",
     "dotenv": "^2.0.0",
     "javascript-state-machine": "^2.3.5",
-    "node-telegram-bot-api": "^0.23.3"
+    "node-telegram-bot-api": "^0.23.3",
+    "pg": "^8.10.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.29.1"
   },
   "devDependencies": {
     "babel-eslint": "^6.0.4",
