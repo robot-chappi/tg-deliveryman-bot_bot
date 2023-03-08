@@ -1,0 +1,1 @@
+export const STORE = 'https://jolly-pika-07b46a.netlify.app/'
