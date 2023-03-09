@@ -6,13 +6,26 @@ import changeAccountData from './modules/changeAccountData'
 import {botOptions} from './modules/keyboards'
 import leaveReview from './modules/leaveReview'
 // import sequelize from '../db/db'
+const express = require('express')
+const cors = require('cors')
 const sequelize = require('../db/db')
 const models = require('../db/models/models')
+const router = require('../db/routes/index')
+const errorHandler = require('../db/middleware/ErrorHandlingMiddleware')
+
 
 export default class Bot {
   constructor(token) {
+    this.PORT = process.env.PORT || 5000
+    this.app = express()
+    this.app.use(cors())
+    this.app.use(express.json())
+    this.app.use('/api', router)
+    this.app.use(errorHandler)
+
     this.client = new TelegramBotClient(token, { polling: true })
     this.website = STORE
+
   }
 
   async start() {
@@ -20,6 +33,7 @@ export default class Bot {
     try {
       await sequelize.authenticate()
       await sequelize.sync()
+      this.app.listen(this.PORT, () => console.log('Сервер запушен на порту ' + this.PORT))
     } catch (e) {
       console.log('Подключение к DB сломалось', e)
     }
