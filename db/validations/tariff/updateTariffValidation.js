@@ -5,7 +5,8 @@ exports.updateTariffValidation = (data) => {
     title: Joi.string(),
     description: Joi.string().min(5),
     price: Joi.number(),
-    discount: Joi.number()
+    discount: Joi.number(),
+    privileges: Joi.any()
   })
 
   return schema.validate(data);
