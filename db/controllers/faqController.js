@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {Faq, Category} = require('../models/models')
+const {Faq} = require('../models/models')
 const {createFaqValidation} = require('../validations/faq/createFaqValidation')
 const {updateFaqValidation} = require('../validations/faq/updateFaqValidation')
 

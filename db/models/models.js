@@ -203,12 +203,8 @@ User.belongsTo(Tariff, {
 });
 
 
-Tariff.belongsToMany(Privilege, {through: PrivilegeTariff, foreignKey: {
-  name: 'tariff_id'
-  } })
-Privilege.belongsToMany(Tariff, {through: PrivilegeTariff, foreignKey: {
-  name: 'privilege_id'
-  } })
+Tariff.belongsToMany(Privilege, {through: PrivilegeTariff})
+Privilege.belongsToMany(Tariff, {through: PrivilegeTariff})
 
 Ingredient.belongsToMany(Product, {through: IngredientProduct, foreignKey: {
     name: 'ingredient_id'

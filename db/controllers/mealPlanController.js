@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {MealPlan, Ingredient} = require('../models/models')
+const {MealPlan} = require('../models/models')
 const {createMealPlanValidation} = require('../validations/mealPlan/createMealPlanValidation')
 
 class MealPlanController {
@@ -15,7 +15,7 @@ class MealPlanController {
   async getMealPlan(req, res) {
     try {
       const {id} = req.params
-      const mealPlan = await mealPlan.findOne({where: {id: id}})
+      const mealPlan = await MealPlan.findOne({where: {id: id}})
       return res.json(mealPlan)
     } catch (e) {
       console.log(e)
