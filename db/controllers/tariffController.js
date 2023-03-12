@@ -75,28 +75,23 @@ class TariffController {
 
       const {id} = req.params
       const {title, description, price, discount, privileges} = req.body
+      const tariff = await Tariff.findOne({where: {id: id}})
 
-      // await Tariff.update({title: title, description: description, price: price, discount: discount}, {where: {id: id}})
+      await tariff.update({title: title, description: description, price: price, discount: discount})
+      const tariffItem = await tariff.getPrivileges()
 
-      const tariffItem = await Tariff.findOne({where: {id: id}}).then(tariff => {
-        if(!tariff) return tariff;
-        return tariff.getPrivileges()
-      })
 
-      if (tariffItem.length !== privileges.length) {
-        await Tariff.findOne({where: {id: id}})
-          .then(tariff=>{
-            if(!tariff) return;
-            tariff.getPrivileges().then(privilegesDB=>{
-              for(let i = 0; i < privileges.length; i++){
-                if(tariff.id===privilegesDB[i]['privilege_tariff'].tariffId) privilegesDB[i]['privilege_tariff'].destroy();
-              }
-            });
-          });
-        const tariff = await Tariff.findOne({where: {id: id}})
-        for (const i of privileges) {
-          const privilegeItem = await Privilege.findOne({where: {id: i.id}})
-          tariff.addPrivilege(privilegeItem)
+      if (tariffItem.length > privileges.length || tariffItem.length < privileges.length || tariffItem.length === privileges.length) {
+        if (tariffItem.length !== 0) {
+          for (let i = 0; i < tariffItem.length; i++) {
+            tariffItem[i]['privilege_tariff'].destroy();
+          }
+        }
+        if (privileges.length !== 0) {
+          for (const i of privileges) {
+            const privilegeItem = await Privilege.findOne({where: {id: i.id}})
+            if (privilegeItem) await tariff.addPrivilege(privilegeItem)
+          }
         }
       }
 
