@@ -173,45 +173,25 @@ Order.belongsTo(Category, {
 
 
 Role.hasMany(User)
-User.belongsTo(Role, {
-  foreignKey: {
-    name: 'role_id',
-    defaultValue: 1
-  }
-});
+// default user
+User.belongsTo(Role);
 
 Category.hasMany(Product)
-Product.belongsTo(Category, {
-  foreignKey: {
-    name: 'category_id'
-  }
-});
+Product.belongsTo(Category);
 
 Type.hasMany(Product)
-Product.belongsTo(Type, {
-  foreignKey: {
-    name: 'type_id'
-  }
-});
+Product.belongsTo(Type);
 
 Tariff.hasMany(User)
-User.belongsTo(Tariff, {
-  foreignKey: {
-    name: 'tariff_id',
-    defaultValue: 1
-  }
-});
+// default 1 (ЭКО)
+User.belongsTo(Tariff);
 
 
 Tariff.belongsToMany(Privilege, {through: PrivilegeTariff})
 Privilege.belongsToMany(Tariff, {through: PrivilegeTariff})
 
-Ingredient.belongsToMany(Product, {through: IngredientProduct, foreignKey: {
-    name: 'ingredient_id'
-  } })
-Product.belongsToMany(Ingredient, {through: IngredientProduct, foreignKey: {
-    name: 'product_id'
-  } })
+Ingredient.belongsToMany(Product, {through: IngredientProduct})
+Product.belongsToMany(Ingredient, {through: IngredientProduct})
 
 
 module.exports = {
