@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {User, FavoriteProduct} = require('../models/models')
+const {User, FavoriteProduct, UnlovedIngredient, FavoriteIngredient} = require('../models/models')
 const {createUserValidation} = require('../validations/user/createUserValidation')
 const {updateUserValidation} = require('../validations/user/updateUserValidation')
 
@@ -25,18 +25,23 @@ class UserController {
   }
 
   async createUser(req, res, next) {
+    // mealPlan
     try {
       const {error} = createUserValidation(req.body);
       if(error) {
         return next(ApiError.badRequest('Что-то введено не верно'))
       }
       const {chatId, name, phoneNumber, address, roleId, tariffId} = req.body
-      const user = await User.create({chatId, name, phoneNumber, address, roleId: roleId, tariffId: tariffId, favorite_product: {
-
-        }}, {include: {
+      const user = await User.create({chatId, name, phoneNumber, address, roleId: roleId, tariffId: tariffId, favorite_product: {}, unloved_ingredient: {}, favorite_ingredient: {}}, {include: [{
           model: FavoriteProduct,
           as: 'favorite_product'
-        }})
+        },{
+          model: UnlovedIngredient,
+          as: 'unloved_ingredient'
+        },{
+          model: FavoriteIngredient,
+          as: 'favorite_ingredient'
+        }]})
       return res.json(user);
     } catch (e) {
       console.log(e)
@@ -46,7 +51,11 @@ class UserController {
   async deleteUser(req, res) {
     try {
       const {id} = req.params
+      await FavoriteProduct.destroy({where: {userId: id}})
+      await UnlovedIngredient.destroy({where: {userId: id}})
+      await FavoriteIngredient.destroy({where: {userId: id}})
       await User.destroy({where: {id: id}})
+
       return res.json({message: 'Успешно удалено'})
     } catch (e) {
       console.log(e)

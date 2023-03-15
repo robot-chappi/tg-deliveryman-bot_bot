@@ -11,6 +11,9 @@ const roleRouter = require('./roleRouter')
 const tariffRouter = require('./tariffRouter')
 const typeRouter = require('./typeRouter')
 const userRouter = require('./userRouter')
+const favoriteProductRouter = require('./favoriteProductRouter')
+const favoriteIngredientRouter = require('./favoriteIngredientRouter')
+const unlovedIngredientRouter = require('./favoriteIngredientRouter')
 
 router.use('/category', categoryRouter)
 router.use('/faq', faqRouter)
@@ -23,6 +26,9 @@ router.use('/mealplan', mealPlanRouter)
 router.use('/order', orderRouter)
 router.use('/privilege', privilegeRouter)
 router.use('/tariff', tariffRouter)
+router.use('/favoriteproduct', favoriteProductRouter)
+router.use('/favoriteingredient', favoriteIngredientRouter)
+router.use('/unlovedingredient', unlovedIngredientRouter)
 
 
 module.exports = router
