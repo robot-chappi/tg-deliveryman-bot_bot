@@ -13,7 +13,7 @@ const typeRouter = require('./typeRouter')
 const userRouter = require('./userRouter')
 const favoriteProductRouter = require('./favoriteProductRouter')
 const favoriteIngredientRouter = require('./favoriteIngredientRouter')
-const unlovedIngredientRouter = require('./favoriteIngredientRouter')
+const unlovedIngredientRouter = require('./unlovedIngredientRouter')
 
 router.use('/category', categoryRouter)
 router.use('/faq', faqRouter)

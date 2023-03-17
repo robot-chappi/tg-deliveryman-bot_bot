@@ -82,18 +82,20 @@ const MealPlan = sequelize.define('mealplan', {
 
 const MealPlanProduct = sequelize.define('mealplan_product', {
   id: {type: DataTypes.INTEGER, primaryKey: true, unique: true, autoIncrement: true},
-  day: {type: DataTypes.STRING, allowNull: false}
+  name_day: {type: DataTypes.STRING, allowNull: false},
+  slug_day: {type: DataTypes.STRING, allowNull: false},
 })
 
 const Order = sequelize.define('order', {
   id: {type: DataTypes.INTEGER, primaryKey: true, unique: true, autoIncrement: true},
+  chatId: {type: DataTypes.STRING, allowNull: false},
   fullname: {type: DataTypes.STRING, allowNull: false},
   address: {type: DataTypes.STRING, allowNull: false},
   phoneNumber: {type: DataTypes.STRING, allowNull: false},
   wish: {type: DataTypes.STRING},
   price: {type: DataTypes.INTEGER, allowNull: false},
   isComplete: {type: DataTypes.BOOLEAN, defaultValue: false}
-  // From User
+  // From User (userId)
   // favoriteCategory
   // favoriteIngredients
   // unlovedIngredients
@@ -142,6 +144,10 @@ Ingredient.hasMany(FavoriteIngredientIngredient);
 FavoriteIngredientIngredient.belongsTo(Ingredient)
 
 
+User.hasMany(Order)
+Order.belongsTo(User)
+
+
 Order.hasOne(MealPlan)
 MealPlan.belongsTo(Order)
 
@@ -162,14 +168,9 @@ UnlovedIngredientIngredient.belongsTo(UnlovedIngredient)
 Ingredient.hasMany(UnlovedIngredientIngredient);
 UnlovedIngredientIngredient.belongsTo(Ingredient)
 
-
+// order
 Category.hasMany(Order)
-Order.belongsTo(Category, {
-  foreignKey: {
-    name: 'category_id',
-    defaultValue: 1
-  }
-});
+Order.belongsTo(Category);
 
 
 Role.hasMany(User)

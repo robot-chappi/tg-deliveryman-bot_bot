@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {UnlovedIngredientIngredient} = require('../models/models')
+const {UnlovedIngredientIngredient, UnlovedIngredient} = require('../models/models')
 const {createUnlovedIngredientsValidation} = require('../validations/unlovedIngredients/createUnlovedIngredientsValidation')
 const {deleteUnlovedIngredientsValidation} = require('../validations/unlovedIngredients/deleteUnlovedIngredientsValidation')
 
@@ -21,7 +21,8 @@ class UnlovedIngredientController {
         return next(ApiError.badRequest('Не указаны правильно данные'))
       }
       const {unloved_ingredient_id, ingredient_id} = req.body
-      const unlovedIngredientsIngredient = await FavoriteIngredientIngredient.create({unlovedIngredientId: unloved_ingredient_id, ingredientId: ingredient_id})
+      if (!await UnlovedIngredient.findOne({where: {userId: unloved_ingredient_id}})) return res.json('Ошибка');
+      const unlovedIngredientsIngredient = await UnlovedIngredientIngredient.create({unlovedIngredientId: unloved_ingredient_id, ingredientId: ingredient_id})
       return res.json(unlovedIngredientsIngredient);
     } catch (e) {
       console.log(e)
@@ -31,6 +32,7 @@ class UnlovedIngredientController {
   async deleteUnlovedIngredientsIngredients(req, res) {
     try {
       const {id} = req.params
+      if (!await UnlovedIngredient.findOne({where: {userId: id}})) return res.json('Ошибка');
       await UnlovedIngredientIngredient.destroy({where: {unlovedIngredientId: id}})
       return res.json({message: 'Успешно удалено'})
     } catch (e) {
@@ -45,6 +47,7 @@ class UnlovedIngredientController {
         return next(ApiError.badRequest('Не указаны правильно данные'))
       }
       const {unloved_ingredient_id, unloved_ingredient_ingredient_id} = req.body
+      if (!await UnlovedIngredientIngredient.findOne({where: {id: unloved_ingredient_ingredient_id}})) return res.json('Ошибка');
 
       await UnlovedIngredientIngredient.destroy({where: {id: unloved_ingredient_ingredient_id, unlovedIngredientId: unloved_ingredient_id}})
       return res.json({message: 'Успешно удалено'})

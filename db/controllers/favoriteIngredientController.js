@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {FavoriteIngredientIngredient} = require('../models/models')
+const {FavoriteIngredientIngredient, FavoriteIngredient} = require('../models/models')
 const {createFavoriteIngredientsValidation} = require('../validations/favoriteIngredients/createFavoriteIngredientsValidation')
 const {deleteFavoriteIngredientsValidation} = require('../validations/favoriteIngredients/deleteFavoriteIngredientsValidation')
 
@@ -21,6 +21,7 @@ class FavoriteIngredientController {
         return next(ApiError.badRequest('Не указаны правильно данные'))
       }
       const {favorite_ingredient_id, ingredient_id} = req.body
+      if (!await FavoriteIngredient.findOne({where: {userId: favorite_ingredient_id}})) return res.json('Ошибка');
       const favoriteIngredientsIngredient = await FavoriteIngredientIngredient.create({favoriteIngredientId: favorite_ingredient_id, ingredientId: ingredient_id})
       return res.json(favoriteIngredientsIngredient);
     } catch (e) {
@@ -31,6 +32,7 @@ class FavoriteIngredientController {
   async deleteFavoriteIngredientsIngredients(req, res) {
     try {
       const {id} = req.params
+      if (!await FavoriteIngredient.findOne({where: {userId: id}})) return res.json('Ошибка');
       await FavoriteIngredientIngredient.destroy({where: {favoriteIngredientId: id}})
       return res.json({message: 'Успешно удалено'})
     } catch (e) {
@@ -45,6 +47,7 @@ class FavoriteIngredientController {
         return next(ApiError.badRequest('Не указаны правильно данные'))
       }
       const {favorite_ingredient_id, favorite_ingredient_ingredient_id} = req.body
+      if (!await FavoriteIngredientIngredient.findOne({where: {id: favorite_ingredient_ingredient_id}})) return res.json('Ошибка');
 
       await FavoriteIngredientIngredient.destroy({where: {id: favorite_ingredient_ingredient_id, favoriteIngredientId: favorite_ingredient_id}})
       return res.json({message: 'Успешно удалено'})

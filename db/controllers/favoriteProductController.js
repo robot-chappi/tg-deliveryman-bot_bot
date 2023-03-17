@@ -21,6 +21,7 @@ class FavoriteProductController {
         return next(ApiError.badRequest('Не указаны правильно данные'))
       }
       const {favorite_product_id, product_id} = req.body
+      if (!await FavoriteProduct.findOne({where: {userId: favorite_product_id}})) return res.json('Ошибка');
       const favoriteProductsProduct = await FavoriteProductProduct.create({favoriteProductId: favorite_product_id, productId: product_id})
       return res.json(favoriteProductsProduct);
     } catch (e) {
@@ -31,6 +32,7 @@ class FavoriteProductController {
   async deleteFavoriteProductsProducts(req, res) {
     try {
       const {id} = req.params
+      if (!await FavoriteProduct.findOne({where: {userId: id}})) return res.json('Ошибка');
       await FavoriteProductProduct.destroy({where: {favoriteProductId: id}})
       return res.json({message: 'Успешно удалено'})
     } catch (e) {
@@ -45,6 +47,7 @@ class FavoriteProductController {
         return next(ApiError.badRequest('Не указаны правильно данные'))
       }
       const {favorite_product_id, favorite_product_product_id} = req.body
+      if (!await FavoriteProductProduct.findOne({where: {id: favorite_product_product_id}})) return res.json('Ошибка');
 
       await FavoriteProductProduct.destroy({where: {id: favorite_product_product_id, favoriteProductId: favorite_product_id}})
       return res.json({message: 'Успешно удалено'})
