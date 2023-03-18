@@ -52,6 +52,12 @@ const Ingredient = sequelize.define('ingredient', {
   title: {type: DataTypes.STRING, allowNull: false},
 })
 
+const TypeOrder = sequelize.define('type_order', {
+  id: {type: DataTypes.INTEGER, primaryKey: true, unique: true, autoIncrement: true},
+  title: {type: DataTypes.STRING, allowNull: false},
+  slug: {type: DataTypes.STRING, allowNull: false}
+})
+
 const FavoriteProduct = sequelize.define('favorite_product', {
   id: {type: DataTypes.INTEGER, primaryKey: true, unique: true, autoIncrement: true}
 })
@@ -144,8 +150,6 @@ Ingredient.hasMany(FavoriteIngredientIngredient);
 FavoriteIngredientIngredient.belongsTo(Ingredient)
 
 
-User.hasMany(Order)
-Order.belongsTo(User)
 
 
 Order.hasOne(MealPlan)
@@ -171,6 +175,12 @@ UnlovedIngredientIngredient.belongsTo(Ingredient)
 // order
 Category.hasMany(Order)
 Order.belongsTo(Category);
+
+TypeOrder.hasMany(Order)
+Order.belongsTo(TypeOrder);
+
+User.hasMany(Order)
+Order.belongsTo(User)
 
 
 Role.hasMany(User)
@@ -215,4 +225,5 @@ module.exports = {
   Ingredient,
   FavoriteIngredient,
   FavoriteIngredientIngredient,
+  TypeOrder
 }

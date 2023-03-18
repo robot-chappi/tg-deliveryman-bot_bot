@@ -1,46 +1,59 @@
 const ApiError = require('../error/ApiError')
-const {MealPlan} = require('../models/models')
-const {createMealPlanValidation} = require('../validations/mealPlan/createMealPlanValidation')
+const {MealPlan, MealPlanProduct, FavoriteProductProduct, FavoriteProduct} = require('../models/models')
+const {createMealPlanProductsValidation} = require('../validations/mealPlanProducts/createMealPlanProductsValidation')
+const {deleteMealPlanProductsValidation} = require('../validations/mealPlanProducts/deleteMealPlanProductsValidation')
+const {createFavoriteProductsValidation} = require('../validations/favoriteProducts/createFavoriteProductsValidation')
+const {deleteFavoriteProductsValidation} = require('../validations/favoriteProducts/deleteFavoriteProductsValidation')
 
 class MealPlanController {
-  async getMealPlans(req, res) {
-    try {
-      const mealPlans = await MealPlan.findAll();
-      return res.json(mealPlans)
-    } catch (e) {
-      console.log(e)
-    }
-  }
-
-  async getMealPlan(req, res) {
+  async getMealPlanProducts(req, res) {
     try {
       const {id} = req.params
-      const mealPlan = await MealPlan.findOne({where: {id: id}})
-      return res.json(mealPlan)
+      const mealPlanProducts = await MealPlanProduct.findAll({where: {mealplanId: id}, include: ['mealplan', 'product']})
+      return res.json(mealPlanProducts)
     } catch (e) {
       console.log(e)
     }
   }
 
-  async createMealPlan(req, res, next) {
-    // Доработать
+  async createMealPlanProduct(req, res, next) {
     try {
-      const {error} = createMealPlanValidation(req.body);
+      const {error} = createMealPlanProductsValidation(req.body);
       if(error) {
-        return next(ApiError.badRequest('Что-то пошло не так с данными...'))
+        return next(ApiError.badRequest('Не указаны правильно данные'))
       }
-      const {monday, tuesday, wednesday, thursday, friday, saturday, sunday} = req.body
-      const mealPlan = await MealPlan.create({monday, tuesday, wednesday, thursday, friday, saturday, sunday})
-      return res.json(mealPlan);
+      const {meal_plan_id, products} = req.body
+      console.log(products)
+      return res.json(products)
+      if (!await MealPlan.findOne({where: {orderId: meal_plan_id}})) return res.json('Ошибка');
+      const mealPlanProduct = await MealPlanProduct.create({mealplanId: meal_plan_id, productId: product_id})
+      return res.json(mealPlanProduct);
     } catch (e) {
       console.log(e)
     }
   }
 
-  async deleteMealPlan(req, res) {
+  async deleteMealPlanProducts(req, res) {
     try {
       const {id} = req.params
-      await MealPlan.destroy({where: {id: id}})
+      if (!await MealPlan.findOne({where: {orderId: id}})) return res.json('Ошибка');
+      await MealPlanProduct.destroy({where: {mealplanId: id}})
+      return res.json({message: 'Успешно удалено'})
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async deleteMealPlanProduct(req, res) {
+    try {
+      const {error} = deleteFavoriteProductsValidation(req.body);
+      if(error) {
+        return next(ApiError.badRequest('Не указаны правильно данные'))
+      }
+      const {meal_plan_id, meal_plan_product_id} = req.body
+      if (!await MealPlanProduct.findOne({where: {id: meal_plan_product_id}})) return res.json('Ошибка');
+
+      await MealPlanProduct.destroy({where: {id: meal_plan_product_id, mealplanId: meal_plan_id}})
       return res.json({message: 'Успешно удалено'})
     } catch (e) {
       console.log(e)

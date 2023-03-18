@@ -51,6 +51,7 @@ class UserController {
   async deleteUser(req, res) {
     try {
       const {id} = req.params
+      // you have to add method where favoriteproductproduct deletes too
       await FavoriteProduct.destroy({where: {userId: id}})
       await UnlovedIngredient.destroy({where: {userId: id}})
       await FavoriteIngredient.destroy({where: {userId: id}})
