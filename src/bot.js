@@ -8,6 +8,7 @@ import leaveReview from './modules/leaveReview'
 // import sequelize from '../db/db'
 const express = require('express')
 const cors = require('cors')
+const fileUpload = require('express-fileupload')
 const sequelize = require('../db/db')
 const models = require('../db/models/models')
 const router = require('../db/routes/index')
@@ -19,6 +20,7 @@ export default class Bot {
     this.PORT = process.env.PORT || 5000
     this.app = express()
     this.app.use(cors())
+    this.app.use(fileUpload({}))
     this.app.use(express.json())
     this.app.use('/api', router)
     this.app.use(errorHandler)

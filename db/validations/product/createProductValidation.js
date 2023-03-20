@@ -2,13 +2,13 @@ const Joi = require('joi')
 
 exports.createProductValidation = (data) => {
   const schema = Joi.object({
-    title: Joi.string().min(3),
-    weight: Joi.number(),
-    image: Joi.string(),
-    description: Joi.string().min(15),
-    price: Joi.number(),
-    categoryId: Joi.number(),
-    typeId: Joi.number(),
+    title: Joi.any(),
+    weight: Joi.any(),
+    image: Joi.any(),
+    description: Joi.any(),
+    price: Joi.any(),
+    categoryId: Joi.any(),
+    typeId: Joi.any(),
     ingredients: Joi.any()
   })
 

@@ -2,6 +2,8 @@ const ApiError = require('../error/ApiError')
 const {Product, Ingredient} = require('../models/models')
 const {createProductValidation} = require('../validations/product/createProductValidation')
 const {updateProductValidation} = require('../validations/product/updateProductValidation')
+const uuid = require('uuid')
+const path = require('path')
 
 class ProductController {
   async getProducts(req, res) {
@@ -38,14 +40,21 @@ class ProductController {
         return next(ApiError.badRequest('Что-то введено не верно'))
       }
       const {title, weight, image, description, price, categoryId, typeId, ingredients} = req.body
-      const product = await Product.create({title, description, price, weight, image, categoryId: categoryId, typeId: typeId})
+      // for (const i of Array(ingredients)) {
+      //   console.log(i.id)
+      // }
+      // return console.log(ingredients)
+      let fileName = uuid.v4() + ".jpg"
+      image.mv(path.resolve(__dirname, '..', 'static', fileName))
+
+      const product = await Product.create({title, description, price, weight, image: fileName, categoryId: categoryId, typeId: typeId})
       for (const i of ingredients) {
         const ingredient = await Ingredient.findOne({where: {id: i.id}})
         product.addIngredient(ingredient)
       }
       return res.json(product);
     } catch (e) {
-      console.log(e)
+      next(ApiError.badRequest('Что-то введено не верно | ' + e))
     }
   }
 

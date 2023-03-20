@@ -1,9 +1,8 @@
 const ApiError = require('../error/ApiError')
-const {MealPlan, MealPlanProduct, FavoriteProductProduct, FavoriteProduct} = require('../models/models')
+const {MealPlan, MealPlanProduct} = require('../models/models')
 const {createMealPlanProductsValidation} = require('../validations/mealPlanProducts/createMealPlanProductsValidation')
 const {deleteMealPlanProductsValidation} = require('../validations/mealPlanProducts/deleteMealPlanProductsValidation')
-const {createFavoriteProductsValidation} = require('../validations/favoriteProducts/createFavoriteProductsValidation')
-const {deleteFavoriteProductsValidation} = require('../validations/favoriteProducts/deleteFavoriteProductsValidation')
+const {createMealPlanProductValidation} = require('../validations/mealPlanProducts/createMealPlanProductValidation')
 
 class MealPlanController {
   async getMealPlanProducts(req, res) {
@@ -16,17 +15,60 @@ class MealPlanController {
     }
   }
 
-  async createMealPlanProduct(req, res, next) {
+  async createMealPlanProducts(req, res, next) {
     try {
       const {error} = createMealPlanProductsValidation(req.body);
       if(error) {
         return next(ApiError.badRequest('Не указаны правильно данные'))
       }
       const {meal_plan_id, products} = req.body
-      console.log(products)
-      return res.json(products)
+
       if (!await MealPlan.findOne({where: {orderId: meal_plan_id}})) return res.json('Ошибка');
-      const mealPlanProduct = await MealPlanProduct.create({mealplanId: meal_plan_id, productId: product_id})
+
+      for (let productItems in products) {
+        for(let product in products[productItems]) {
+          if (productItems === 'Понедельник') {
+            await MealPlanProduct.create({name_day: productItems, slug_day: productItems.toLowerCase(), mealplanId: meal_plan_id, productId: products[productItems][product]['id']})
+          }
+          if (productItems === 'Вторник') {
+            await MealPlanProduct.create({name_day: productItems, slug_day: productItems.toLowerCase(), mealplanId: meal_plan_id, productId: products[productItems][product]['id']})
+          }
+          if (productItems === 'Среда') {
+            await MealPlanProduct.create({name_day: productItems, slug_day: productItems.toLowerCase(), mealplanId: meal_plan_id, productId: products[productItems][product]['id']})
+          }
+          if (productItems === 'Четверг') {
+            await MealPlanProduct.create({name_day: productItems, slug_day: productItems.toLowerCase(), mealplanId: meal_plan_id, productId: products[productItems][product]['id']})
+          }
+          if (productItems === 'Пятница') {
+            await MealPlanProduct.create({name_day: productItems, slug_day: productItems.toLowerCase(), mealplanId: meal_plan_id, productId: products[productItems][product]['id']})
+          }
+          if (productItems === 'Суббота') {
+            await MealPlanProduct.create({name_day: productItems, slug_day: productItems.toLowerCase(), mealplanId: meal_plan_id, productId: products[productItems][product]['id']})
+          }
+          if (productItems === 'Воскресенье') {
+            await MealPlanProduct.create({name_day: productItems, slug_day: productItems.toLowerCase(), mealplanId: meal_plan_id, productId: products[productItems][product]['id']})
+          }
+        }
+      }
+
+      return res.json('Готово');
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async createMealPlanProduct(req, res, next) {
+    try {
+      const {error} = createMealPlanProductValidation(req.body);
+      if(error) {
+        return next(ApiError.badRequest('Не указаны правильно данные'))
+      }
+      const {meal_plan_id, product_id, name_day, slug_day} = req.body
+
+      if (!await MealPlan.findOne({where: {orderId: meal_plan_id}})) return res.json('Ошибка');
+
+      const mealPlanProduct = await MealPlanProduct.create({name_day: name_day, slug_day: slug_day, mealplanId: meal_plan_id, productId: product_id})
+
       return res.json(mealPlanProduct);
     } catch (e) {
       console.log(e)
@@ -44,9 +86,9 @@ class MealPlanController {
     }
   }
 
-  async deleteMealPlanProduct(req, res) {
+  async deleteMealPlanProduct(req, res, next) {
     try {
-      const {error} = deleteFavoriteProductsValidation(req.body);
+      const {error} = deleteMealPlanProductsValidation(req.body);
       if(error) {
         return next(ApiError.badRequest('Не указаны правильно данные'))
       }
