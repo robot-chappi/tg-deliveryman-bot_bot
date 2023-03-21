@@ -33,17 +33,42 @@ class ProductController {
     }
   }
 
+  async paginationProduct(req, res) {
+    try {
+      let {categoryId, typeId, limit, page} = req.query
+      page = page || 1
+      limit = limit || 3
+      let offset = page * limit - limit
+      let products;
+      if (!categoryId && !typeId) {
+        products = await Product.findAndCountAll({limit: limit, offset: offset});
+      }
+      if (categoryId && !typeId) {
+        products = await Product.findAndCountAll({where: {categoryId: categoryId}, limit: limit, offset: offset});
+      }
+      if (!categoryId && typeId) {
+        products = await Product.findAndCountAll({where: {typeId: typeId}, limit: limit, offset: offset});
+      }
+      if (categoryId && typeId) {
+        products = await Product.findAndCountAll({where: {categoryId: categoryId, typeId: typeId}, limit: limit, offset: offset});
+      }
+
+      return res.json(products);
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async createProduct(req, res, next) {
     try {
       const {error} = createProductValidation(req.body);
       if(error) {
         return next(ApiError.badRequest('Что-то введено не верно'))
       }
-      const {title, weight, image, description, price, categoryId, typeId, ingredients} = req.body
-      // for (const i of Array(ingredients)) {
-      //   console.log(i.id)
-      // }
-      // return console.log(ingredients)
+      const {title, weight, description, price, categoryId, typeId, ingredients} = req.body
+      const {image} = req.files
+
       let fileName = uuid.v4() + ".jpg"
       image.mv(path.resolve(__dirname, '..', 'static', fileName))
 

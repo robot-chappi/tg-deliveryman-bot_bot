@@ -13,7 +13,7 @@ const sequelize = require('../db/db')
 const models = require('../db/models/models')
 const router = require('../db/routes/index')
 const errorHandler = require('../db/middleware/ErrorHandlingMiddleware')
-
+const path = require('path')
 
 export default class Bot {
   constructor(token) {
@@ -22,6 +22,7 @@ export default class Bot {
     this.app.use(cors())
     this.app.use(fileUpload({}))
     this.app.use(express.json())
+    this.app.use(express.static(path.resolve(__dirname, '..', 'db', 'static')))
     this.app.use('/api', router)
     this.app.use(errorHandler)
 
