@@ -1,13 +1,13 @@
 const Router = require('express')
 const categoryController = require('../controllers/categoryController')
+const checkRoleMiddleware = require('../middleware/checkRoleMiddleware')
 const router = new Router()
-// const checkRole = require('../middleware/checkRoleMiddleware')
 
-router.post('/', categoryController.createCategory)
+router.post('/', checkRoleMiddleware(['admin']), categoryController.createCategory)
 router.get('/all', categoryController.getCategories)
 router.get('/:id', categoryController.getCategory)
-router.delete('/:id', categoryController.deleteCategory)
-router.patch('/:id', categoryController.patchCategory)
+router.delete('/:id', checkRoleMiddleware(['admin']), categoryController.deleteCategory)
+router.patch('/:id', checkRoleMiddleware(['admin']), categoryController.patchCategory)
 
 
 module.exports = router

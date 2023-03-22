@@ -2,12 +2,37 @@ const ApiError = require('../error/ApiError')
 const {User, FavoriteProduct, UnlovedIngredient, FavoriteIngredient} = require('../models/models')
 const {createUserValidation} = require('../validations/user/createUserValidation')
 const {updateUserValidation} = require('../validations/user/updateUserValidation')
+const jwt = require('jsonwebtoken')
+
+const generateJwt = (id, chatId, role) => {
+  return jwt.sign(
+    {id, chatId, role},
+    process.env.SECRET_KEY,
+    {expiresIn: '24h'}
+  )
+}
 
 class UserController {
   async getUsers(req, res) {
     try {
       const users = await User.findAll({ include: ["role", "tariff"] });
       return res.json(users)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async getToken(req, res, next) {
+    try {
+      const {chatId} = req.params
+      const user = await User.findOne({ where: {chatId: chatId}, include: ["role", "tariff"] });
+      if(!user) {
+        return next(ApiError.badRequest('Такого пользователя нету'))
+      }
+
+      const token = generateJwt(user.id, user.chatId, user.role.slug)
+
+      return res.json({token})
     } catch (e) {
       console.log(e)
     }

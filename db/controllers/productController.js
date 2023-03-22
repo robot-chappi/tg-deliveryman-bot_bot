@@ -4,6 +4,7 @@ const {createProductValidation} = require('../validations/product/createProductV
 const {updateProductValidation} = require('../validations/product/updateProductValidation')
 const uuid = require('uuid')
 const path = require('path')
+const fs = require('fs')
 
 class ProductController {
   async getProducts(req, res) {
@@ -86,9 +87,13 @@ class ProductController {
   async deleteProduct(req, res) {
     try {
       const {id} = req.params
+
+      let filePath;
       await Product.findOne({where: {id: id}})
         .then(product=>{
           if(!product) return;
+          filePath = product.image
+
           product.getIngredients().then(ingredients=>{
             for(let i = 0; i < ingredients.length; i++){
               if(product.id===ingredients[i]['ingredient_product'].productId) ingredients[i]['ingredient_product'].destroy();
@@ -96,6 +101,7 @@ class ProductController {
           });
         });
       await Product.destroy({where: {id: id}})
+      fs.unlinkSync(path.resolve(__dirname, '..', 'static', filePath))
       return res.json({message: 'Успешно удалено'})
     } catch (e) {
       console.log(e)
@@ -110,10 +116,19 @@ class ProductController {
       }
 
       const {id} = req.params
-      const {title, weight, image, description, price, categoryId, typeId, ingredients} = req.body
+      const {title, weight, description, price, categoryId, typeId, ingredients} = req.body
+      const {image} = req.files
+
       const product = await Product.findOne({where: {id: id}})
 
-      await product.update({title: title, description: description, price: price, weight: weight, image: image, categoryId: categoryId, typeId: typeId})
+      if (image) {
+        fs.unlinkSync(path.resolve(__dirname, '..', 'static', product.image))
+        let fileName = uuid.v4() + ".jpg"
+        image.mv(path.resolve(__dirname, '..', 'static', fileName))
+
+        await product.update({image: fileName})
+      }
+      await product.update({title: title, description: description, price: price, weight: weight, categoryId: categoryId, typeId: typeId})
       const productItem = await product.getIngredients()
 
 
