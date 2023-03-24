@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {User, FavoriteProduct, UnlovedIngredient, FavoriteIngredient} = require('../models/models')
+const {User, FavoriteProduct, UnlovedIngredient, FavoriteIngredient, Tariff} = require('../models/models')
 const {createUserValidation} = require('../validations/user/createUserValidation')
 const {updateUserValidation} = require('../validations/user/updateUserValidation')
 const jwt = require('jsonwebtoken')
@@ -49,6 +49,16 @@ class UserController {
     }
   }
 
+  async getMe(req, res) {
+    try {
+      const {chatId} = req.params
+      const user = await User.findOne({where: {chatId: chatId}, include: ["role", "tariff"]})
+      return res.json(user)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async createUser(req, res, next) {
     // mealPlan
     try {
@@ -67,6 +77,7 @@ class UserController {
           model: FavoriteIngredient,
           as: 'favorite_ingredient'
         }]})
+
       return res.json(user);
     } catch (e) {
       console.log(e)
@@ -83,6 +94,35 @@ class UserController {
       await User.destroy({where: {id: id}})
 
       return res.json({message: 'Успешно удалено'})
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async changeUserTariff(req, res) {
+    try {
+      const {chatId, tariffTitle} = req.body
+      const tariff = await Tariff.findOne({where: {title: tariffTitle}})
+      if (!tariff) return res.json({message: 'Не вышло!'})
+      await User.update({tariffId: tariff.id}, {where: {chatId: chatId}})
+
+      return res.json({message: 'Обновлено!'});
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async changeUser(req, res, next) {
+    try {
+      const {error} = updateUserValidation(req.body);
+      if(error) {
+        return next(ApiError.badRequest('Что-то не правильно введено'))
+      }
+
+      const {chatId, name, phoneNumber, address, roleId, tariffId} = req.body
+      await User.update({chatId: chatId, name: name, phoneNumber: phoneNumber, address: address, roleId: roleId, tariffId: tariffId}, {where: {chatId: chatId}})
+
+      return res.json({message: 'Обновлено!'});
     } catch (e) {
       console.log(e)
     }

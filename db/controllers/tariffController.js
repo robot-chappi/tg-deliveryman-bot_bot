@@ -6,7 +6,7 @@ const {updateTariffValidation} = require('../validations/tariff/updateTariffVali
 class TariffController {
   async getTariffs(req, res) {
     try {
-      const tariffs = await Tariff.findAll();
+      const tariffs = await Tariff.findAll({include: 'privileges'});
       return res.json(tariffs)
     } catch (e) {
       console.log(e)

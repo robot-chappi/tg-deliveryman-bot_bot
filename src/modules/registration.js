@@ -1,6 +1,8 @@
 import StateMachine from 'javascript-state-machine'
 import {botOptions} from './keyboards'
 import {getTariffItems} from '../http/tariffAPI'
+import {response} from 'express'
+import {createUser, getRoles} from '../http/userAPI'
 
 function createFsm() {
   return StateMachine.create({
@@ -53,9 +55,15 @@ export default async function respondTo (message, client) {
     let fsm = createFsm()
     let lastReply = message
 
-    let name, address, phone, tariffId
     const chatId = message.message.chat.id
+    let name, address, phone, tariffId
+
     const tariffItems = await getTariffItems();
+    const roles = await getRoles();
+
+
+    let roleId = roles.find(role => role.slug === 'user').id
+
     let lastMessage
 
     fsm.ongotstart = () => {
@@ -81,22 +89,35 @@ export default async function respondTo (message, client) {
     fsm.ongotaddress = (event, from, to, message) => {
       address = message.text
       lastMessage = client.sendMessage(message.chat.id,
-        `Ура, теперь я знаю где ты живешь! 😅 На этот адрес буду доставлять только самую лучшую еду - ${address} \n\nА теперь я бы хотел узнать твой тариф, по которому ты бы хотел питаться \n\n Выбери тариф, который тебе больше всего нравится:\n`,
+        `Ура, теперь я знаю где ты живешь! 😅 На этот адрес буду доставлять только самую лучшую еду - ${address} \n\nА теперь я бы хотел узнать твой тариф, по которому ты бы хотел питаться \n\nВыбери тариф (ID), который тебе больше всего нравится:\n${tariffItems.map((i) => {return `ID: ${i.id}\nНазвание: ${i.title}\nОписание: ${i.description}\nЦена (неделя): ${i.price}\nСкидка на заказ: ${i.discount}\nПривелегии: \n${i.privileges.map((i) => {return `${i.title}\n`}).join('')}\n\n`}).join('')}`,
         { reply_markup: JSON.stringify({ force_reply: true})})
     }
 
     fsm.ongottariff = (event, from, to, message) => {
-      address = message.text
+      tariffId = message.text
       lastMessage = client.sendMessage(message.chat.id,
-        `Ура, теперь я знаю где ты живешь! 😅 На этот адрес буду доставлять только самую лучшую еду - ${address} \n\nПодведем итоги: \nИмя: ${name}\nТелефон: ${phone}\nАдрес: ${address}\n\nВсе верно? (да/нет)`,
+        `Ура, теперь я знаю твой любимый тариф! 😅\n\nПодведем итоги: \nИмя: ${name}\nТелефон: ${phone}\nАдрес: ${address}\nТариф: ${tariffId}\n\nВсе верно? (да/нет)`,
         { reply_markup: JSON.stringify({ force_reply: true})})
     }
 
 
-    fsm.onconfirmed = (event, from, to, message) => {
-      // const response
-      lastMessage = client.sendMessage(message.chat.id,
-        'Отлично! Тогда прошу взглянуть на клавиатуру, там ты можешь заказать себе вкусную еду и опробовать мой функционал! 😊', botOptions)
+    fsm.onconfirmed = async (event, from, to, message) => {
+      try {
+        await createUser(
+          {chatId: String(chatId),
+          name: String(name),
+          phoneNumber: String(phone),
+          address: String(address),
+          roleId: Number(roleId),
+          tariffId: Number(tariffId)
+        })
+
+        lastMessage = client.sendMessage(message.chat.id,
+          'Отлично! Тогда прошу взглянуть на клавиатуру, там ты можешь заказать себе вкусную еду и опробовать мой функционал! 😊', botOptions)
+
+      } catch (e) {
+        client.sendMessage(message.chat.id, 'Какая-то ошибка (может вы ввели имя состоящее из одной буквы - минимум 2), попробуй снова /start')
+      }
     }
 
     fsm.oncancelled = (event, from, to, message) => {
