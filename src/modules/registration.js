@@ -1,5 +1,6 @@
 import StateMachine from 'javascript-state-machine'
 import {botOptions} from './keyboards'
+import {getTariffItems} from '../http/tariffAPI'
 
 function createFsm() {
   return StateMachine.create({
@@ -9,7 +10,8 @@ function createFsm() {
       { name: 'gotstart', from: 'waitingstart', to: 'waitingname' },
       { name: 'gotname', from: 'waitingname', to: 'waitingphone' },
       { name: 'gotphone', from: 'waitingphone', to: 'waitingaddress' },
-      { name: 'gotaddress', from: 'waitingaddress', to: 'confirm'},
+      { name: 'gotaddress', from: 'waitingaddress', to: 'waitingtariff'},
+      { name: 'gottariff', from: 'waitingtariff', to: 'confirm'},
       { name: 'cancelled', from: 'confirm', to: 'waitingname'},
       { name: 'confirmed', from: 'confirm', to: 'final' },
       { name: 'invalid', from: 'confirm', to: 'confirm' }
@@ -31,6 +33,9 @@ function eventFromStateAndMessageText(state, text) {
   case 'waitingaddress':
     return 'gotaddress'
     break
+  case 'waitingtariff':
+    return 'gottariff'
+    break
   case 'confirm':
     if (text === 'да') {
       return 'confirmed'
@@ -48,7 +53,9 @@ export default async function respondTo (message, client) {
     let fsm = createFsm()
     let lastReply = message
 
-    let name, address, phone
+    let name, address, phone, tariffId
+    const chatId = message.message.chat.id
+    const tariffItems = await getTariffItems();
     let lastMessage
 
     fsm.ongotstart = () => {
@@ -74,12 +81,20 @@ export default async function respondTo (message, client) {
     fsm.ongotaddress = (event, from, to, message) => {
       address = message.text
       lastMessage = client.sendMessage(message.chat.id,
+        `Ура, теперь я знаю где ты живешь! 😅 На этот адрес буду доставлять только самую лучшую еду - ${address} \n\nА теперь я бы хотел узнать твой тариф, по которому ты бы хотел питаться \n\n Выбери тариф, который тебе больше всего нравится:\n`,
+        { reply_markup: JSON.stringify({ force_reply: true})})
+    }
+
+    fsm.ongottariff = (event, from, to, message) => {
+      address = message.text
+      lastMessage = client.sendMessage(message.chat.id,
         `Ура, теперь я знаю где ты живешь! 😅 На этот адрес буду доставлять только самую лучшую еду - ${address} \n\nПодведем итоги: \nИмя: ${name}\nТелефон: ${phone}\nАдрес: ${address}\n\nВсе верно? (да/нет)`,
         { reply_markup: JSON.stringify({ force_reply: true})})
     }
 
 
     fsm.onconfirmed = (event, from, to, message) => {
+      // const response
       lastMessage = client.sendMessage(message.chat.id,
         'Отлично! Тогда прошу взглянуть на клавиатуру, там ты можешь заказать себе вкусную еду и опробовать мой функционал! 😊', botOptions)
     }
