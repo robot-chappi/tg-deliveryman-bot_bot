@@ -5,8 +5,9 @@ import {STORE} from './modules/variables'
 import changeAccountData from './modules/changeAccountData'
 import {botOptions} from './modules/keyboards'
 import leaveReview from './modules/leaveReview'
-import {changeUserTariff, getMe} from './http/userAPI'
+import {changeUserTariff, getFavoriteIngredient, getFavoriteProduct, getMe, getUnlovedIngredient} from './http/userAPI'
 import {getTariffItems} from './http/tariffAPI'
+import {getMealPlan, getOrder, getOrders, deleteOrders, deleteOrder} from './http/orderAPI'
 // import sequelize from '../db/db'
 const express = require('express')
 const cors = require('cors')
@@ -16,7 +17,7 @@ const models = require('../db/models/models')
 const router = require('../db/routes/index')
 const errorHandler = require('../db/middleware/ErrorHandlingMiddleware')
 const path = require('path')
-const {order} = require('../src/mockdata/mockdata')
+// const {order} = require('../src/mockdata/mockdata')
 
 export default class Bot {
   constructor(token) {
@@ -204,40 +205,37 @@ export default class Bot {
 
         if (text === 'Мои заказы 💵') {
           const user = await getMe(chatId);
-          // await this.client.sendMessage(chatId, `Твой тариф: ${user.tariff.title} ${user.tariff.title === 'ПРО' ? '🥇' : user.tariff.title === 'СРЕДНИЙ' ? '🥈' : '🥉'}\n\nКатегория: ${order.category}\n\nБлюда: \n\nПонедельник: \n${order.food.monday.map(i => {
-          //   return `${i.name + ' | ' + i.price + 'руб.' + ' | ' + i.quantity} \n`
-          // }).join('')}\nВторник: \n${order.food.tuesday.map(i => {
-          //   return `${i.name + ' | ' + i.price + 'руб.' + ' | ' + i.quantity} \n`
-          // }).join('')}\nСреда: \n${order.food.wednesday.map(i => {
-          //   return `${i.name + ' | ' + i.price + 'руб.' + ' | ' + i.quantity} \n`
-          // }).join('')}\nЧетверг: \n${order.food.thursday.map(i => {
-          //   return `${i.name + ' | ' + i.price + 'руб.' + ' | ' + i.quantity} \n`
-          // }).join('')}\nПятница: \n${order.food.friday.map(i => {
-          //   return `${i.name + ' | ' + i.price + 'руб.' + ' | ' + i.quantity} \n`
-          // }).join('')}\nСуббота: \n${order.food.saturday.map(i => {
-          //   return `${i.name + ' | ' + i.price + 'руб.' + ' | ' + i.quantity} \n`
-          // }).join('')}\nВоскресенье: \n${order.food.sunday.map(i => {
-          //   return `${i.name + ' | ' + i.price + 'руб.' + ' | ' + i.quantity} \n`
-          // }).join('')}\n\nВ месяц: ${order.full_price_per_month} руб.\nОплата: ${order.payment === 1 ? 'Оплачен' : 'Не оплачен'}\n
-          // `, {
-          //   reply_markup: JSON.stringify({
-          //     remove_keyboard: true
-          //   }),
-          // })
+          const order = await getOrder(chatId);
 
-          await this.client.sendMessage(chatId, `Твой тариф: ${user.tariff.title} ${user.tariff.title === 'ПРО' ? '🥇' : user.tariff.title === 'СРЕДНИЙ' ? '🥈' : '🥉'}\nИмя: ${order.fullname}\nАдрес: ${order.address}\nТелефон: ${order.phoneNumber}\nКатегория: ${order.favoriteCategory.title}\nЛюбимые ингредиенты: ${order.favoriteFood.map((i) => {return `${i.title}\n`}).join('')}\nНелюбимые ингредиенты: ${order.unlovedFood.map((i) => {return `${i.title}\n`}).join('')}\nЕда из Любимое: ${order.foodFromFavorite.map((i) => {return `${i.title}\n`}).join('')}\nЦена: ${(order.mealPlanPrice - order.mealPlanPrice/100*user.tariff.discount) + user.tariff.price}\nСкидка: ${user.tariff.discount}\nПожелания: ${order.wish}\nВыполнено: ${order.isComplete ? 'да' : 'нет'}\n\nРацион: \n\nПонедельник: \n${order.mealPlan['Понедельник'].map(i => {
+          if (!order) {
+            return this.client.sendMessage(chatId, 'У вас нету активных заказов, вы можете посмотреть все ваши заказы по кнопке ниже 😄', {
+              reply_markup: JSON.stringify({
+                inline_keyboard: [
+                  [{text: 'Открыть все 🍔', callback_data: 'allorders'}],
+                  [{text: 'Не нужно 😒', callback_data: 'dontChangeData'}]
+                ]
+              }),
+            })
+          }
+
+          const mealPlan = await getMealPlan(order.id);
+          const favoriteIngredient = await getFavoriteIngredient(user.id);
+          const unlovedIngredient = await getUnlovedIngredient(user.id);
+          const favoriteProduct = await getFavoriteProduct(user.id);
+
+          await this.client.sendMessage(chatId, `Твой тариф: ${user.tariff.title} ${user.tariff.title === 'ПРО' ? '🥇' : user.tariff.title === 'СРЕДНИЙ' ? '🥈' : '🥉'}\nИмя: ${order.fullname}\nАдрес: ${order.address}\nТелефон: ${order.phoneNumber}\nКатегория: ${order.category.title}\nЛюбимые ингредиенты: ${favoriteIngredient.map((i) => {return `${i.ingredient.title}\n`}).join('')}\nНелюбимые ингредиенты: ${unlovedIngredient.map((i) => {return `${i.ingredient.title}\n`}).join('')}\nЕда из Любимое: ${favoriteProduct.map((i) => {return `${i.product.title}\n`}).join('')}\nЦена: ${(order.price - order.price/100*user.tariff.discount) + user.tariff.price} (с учетом скидки по тарифу)\nСкидка: ${user.tariff.discount}%\nПожелания: ${order.wish}\nВыполнено: ${order.isComplete ? 'да' : 'нет'}\nОплачено: ${order.isPaid ? 'да' : 'нет'}\n\nРацион:\nПонедельник: \n${mealPlan['Понедельник'].map(i => {
             return `${i.title + ' | ' + i.price + 'руб.' + ' | ' + i.weight} \n`
-          }).join('')}\nВторник: \n${order.mealPlan['Вторник'].map(i => {
+          }).join('')}\nВторник: \n${mealPlan['Вторник'].map(i => {
             return `${i.title + ' | ' + i.price + 'руб.' + ' | ' + i.weight} \n`
-          }).join('')}\nСреда: \n${order.mealPlan['Среда'].map(i => {
+          }).join('')}\nСреда: \n${mealPlan['Среда'].map(i => {
             return `${i.title + ' | ' + i.price + 'руб.' + ' | ' + i.weight} \n`
-          }).join('')}\nЧетверг: \n${order.mealPlan['Четверг'].map(i => {
+          }).join('')}\nЧетверг: \n${mealPlan['Четверг'].map(i => {
             return `${i.title + ' | ' + i.price + 'руб.' + ' | ' + i.weight} \n`
-          }).join('')}\nПятница: \n${order.mealPlan['Пятница'].map(i => {
+          }).join('')}\nПятница: \n${mealPlan['Пятница'].map(i => {
             return `${i.title + ' | ' + i.price + 'руб.' + ' | ' + i.weight} \n`
-          }).join('')}\nСуббота: \n${order.mealPlan['Суббота'].map(i => {
+          }).join('')}\nСуббота: \n${mealPlan['Суббота'].map(i => {
             return `${i.title + ' | ' + i.price + 'руб.' + ' | ' + i.weight} \n`
-          }).join('')}\nВоскресенье: \n${order.mealPlan['Воскресенье'].map(i => {
+          }).join('')}\nВоскресенье: \n${mealPlan['Воскресенье'].map(i => {
             return `${i.title + ' | ' + i.price + 'руб.' + ' | ' + i.weight} \n`
           }).join('')}
           `, {
@@ -282,6 +280,23 @@ export default class Bot {
           return this.client.sendMessage(chatId, 'Хорошо! Тогда перейдем на главную 🚗', botOptions)
         }
 
+        if (data === 'allorders') {
+          const orders = await getOrders(chatId);
+          if (orders.length < 1) return this.client.sendMessage(chatId, 'Заказов нет', botOptions)
+          return this.client.sendMessage(chatId, `Все твои заказы (могут быть не все так как история заказов чистится):\n\n${orders.map(i => {return `ID: ${i.id}\nИмя: ${i.fullname}\nАдрес: ${i.address}\nТелефон: ${i.phoneNumber}\nПожелание: ${i.wish}\nЦена: ${i.price}\nВыполнено: ${i.isComplete ? 'да' : 'нет'}\nОплачено: ${i.isPaid ? 'да' : 'нет'}\n\n`}).join('')}`, {
+            reply_markup: JSON.stringify({
+              inline_keyboard: [
+                [{text: 'Хорошо 👌', callback_data: 'ok'}],
+                [{text: 'Удалить все ❌', callback_data: 'delete-orders'}],
+              ]
+            }),
+          })
+        }
+
+        if (data === 'ok') {
+          return this.client.sendMessage(chatId, 'Хорошо когда хорошо 😊', botOptions)
+        }
+
         if (data === 'pay') {
           return this.client.sendMessage(chatId, 'Оплата в разработке...', botOptions)
         }
@@ -290,8 +305,16 @@ export default class Bot {
           return this.client.sendMessage(chatId, 'Хорошо, подумаем! Ну пока перейдем на главную 🚗', botOptions)
         }
 
+        if (data === 'delete-orders') {
+          const orders = await deleteOrders(chatId);
+          if (orders.status === 'error') return this.client.sendMessage(chatId, 'Заказы не найдены 🤷', botOptions)
+          return this.client.sendMessage(chatId, 'Удалено все ✅', botOptions)
+        }
+
         if (data === 'delete-order') {
-          return this.client.sendMessage(chatId, 'Удаляем... Что насчет нового заказа? 🍨', botOptions)
+          const order = await deleteOrder(chatId);
+          if (order.status === 'error') return this.client.sendMessage(chatId, 'Заказ не найден 🤷', botOptions)
+          return this.client.sendMessage(chatId, 'Заказ удален ✅', botOptions)
         }
 
         if (data === 'gotПРО') {

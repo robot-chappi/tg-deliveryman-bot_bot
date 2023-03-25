@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {MealPlan, MealPlanProduct} = require('../models/models')
+const {MealPlan, MealPlanProduct, FavoriteIngredient, FavoriteIngredientIngredient} = require('../models/models')
 const {createMealPlanProductsValidation} = require('../validations/mealPlanProducts/createMealPlanProductsValidation')
 const {deleteMealPlanProductsValidation} = require('../validations/mealPlanProducts/deleteMealPlanProductsValidation')
 const {createMealPlanProductValidation} = require('../validations/mealPlanProducts/createMealPlanProductValidation')
@@ -15,15 +15,60 @@ class MealPlanController {
     }
   }
 
+  async getUserMealPlanProducts(req, res) {
+    try {
+      const {orderId} = req.params
+      const mealPlanItem = await MealPlan.findOne({where: {orderId: orderId}})
+      const mealPlanProducts = await MealPlanProduct.findAll({where: {mealplanId: mealPlanItem.id}, include: ['mealplan', 'product']})
+
+      let beautyPlan = {
+        "Понедельник": [],
+        "Вторник": [],
+        "Среда": [],
+        "Четверг": [],
+        "Пятница": [],
+        "Суббота": [],
+        "Воскресенье": []
+      }
+      mealPlanProducts.forEach((i) => {
+        if (i.slug_day === 'понедельник') {
+          beautyPlan['Понедельник'].push(i.product)
+        }
+        if (i.slug_day === 'вторник') {
+          beautyPlan['Вторник'].push(i.product)
+        }
+        if (i.slug_day === 'среда') {
+          beautyPlan['Среда'].push(i.product)
+        }
+        if (i.slug_day === 'четверг') {
+          beautyPlan['Четверг'].push(i.product)
+        }
+        if (i.slug_day === 'пятница') {
+          beautyPlan['Пятница'].push(i.product)
+        }
+        if (i.slug_day === 'суббота') {
+          beautyPlan['Суббота'].push(i.product)
+        }
+        if (i.slug_day === 'воскресенье') {
+          beautyPlan['Воскресенье'].push(i.product)
+        }
+      })
+
+      return res.json(beautyPlan)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async createMealPlanProducts(req, res, next) {
     try {
       const {error} = createMealPlanProductsValidation(req.body);
       if(error) {
         return next(ApiError.badRequest('Не указаны правильно данные'))
       }
-      const {meal_plan_id, products} = req.body
+      const {order_id, meal_plan_id, products} = req.body
 
-      if (!await MealPlan.findOne({where: {orderId: meal_plan_id}})) return res.json('Ошибка');
+      if (!await MealPlan.findOne({where: {orderId: order_id}})) return res.json('Ошибка');
 
       for (let productItems in products) {
         for(let product in products[productItems]) {

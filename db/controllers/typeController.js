@@ -1,10 +1,7 @@
 const ApiError = require('../error/ApiError')
-const {Type, Category} = require('../models/models')
+const {Type} = require('../models/models')
 const {createTypeValidation} = require('../validations/type/createTypeValidation')
 const {updateTypeValidation} = require('../validations/type/updateTypeValidation')
-const {createCategoryValidation} = require('../validations/category/createCategoryValidation')
-const {updateCategoryValidation} = require('../validations/category/updateCategoryValidation')
-
 
 class TypeController {
   async getTypes(req, res) {

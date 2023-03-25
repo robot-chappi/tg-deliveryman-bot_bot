@@ -5,6 +5,7 @@ const router = new Router()
 
 router.post('/', authMiddleware, unlovedIngredientController.createUnlovedIngredients)
 router.get('/all/:id', authMiddleware, unlovedIngredientController.getUnlovedIngredients)
+router.get('/user/all/:userId', unlovedIngredientController.getUserUnlovedIngredients)
 router.delete('/all/:id', authMiddleware, unlovedIngredientController.deleteUnlovedIngredientsIngredients)
 router.delete('/', authMiddleware, unlovedIngredientController.deleteUnlovedIngredientsIngredient)
 

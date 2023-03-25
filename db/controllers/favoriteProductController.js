@@ -14,6 +14,17 @@ class FavoriteProductController {
     }
   }
 
+  async getUserFavoriteProducts(req, res) {
+    try {
+      const {userId} = req.params
+      const favoriteProductItem = await FavoriteProduct.findOne({where: {userId: userId}})
+      const favoriteProductProducts = await FavoriteProductProduct.findAll({where: {favoriteProductId: favoriteProductItem.id}, include: ['favorite_product', 'product']})
+      return res.json(favoriteProductProducts)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async createFavoriteProducts(req, res, next) {
     try {
       const {error} = createFavoriteProductsValidation(req.body);

@@ -9,6 +9,7 @@ exports.createOrderValidation = (data) => {
     wish: Joi.string(),
     price: Joi.number(),
     isComplete: Joi.boolean(),
+    isPaid: Joi.boolean(),
     category_id: Joi.number(),
     user_id: Joi.number(),
     typeOrderId: Joi.number(),

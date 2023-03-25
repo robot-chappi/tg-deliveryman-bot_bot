@@ -5,6 +5,7 @@ const router = new Router()
 
 router.post('/', authMiddleware, favoriteProductController.createFavoriteProducts)
 router.get('/all/:id', authMiddleware, favoriteProductController.getFavoriteProducts)
+router.get('/user/all/:userId', favoriteProductController.getUserFavoriteProducts)
 router.delete('/all/:id', authMiddleware, favoriteProductController.deleteFavoriteProductsProducts)
 router.delete('/', authMiddleware, favoriteProductController.deleteFavoriteProductsProduct)
 

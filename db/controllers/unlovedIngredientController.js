@@ -14,6 +14,17 @@ class UnlovedIngredientController {
     }
   }
 
+  async getUserUnlovedIngredients(req, res) {
+    try {
+      const {userId} = req.params
+      const unlovedIngredientItem = await UnlovedIngredient.findOne({where: {userId: userId}})
+      const unlovedIngredientIngredients = await UnlovedIngredientIngredient.findAll({where: {unlovedIngredientId: unlovedIngredientItem.id}, include: ['unloved_ingredient', 'ingredient']})
+      return res.json(unlovedIngredientIngredients)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async createUnlovedIngredients(req, res, next) {
     try {
       const {error} = createUnlovedIngredientsValidation(req.body);

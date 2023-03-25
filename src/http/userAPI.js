@@ -24,3 +24,18 @@ export const getRoles = async () => {
   const {data} = await $host.get('api/role/all')
   return data
 }
+
+export const getFavoriteIngredient = async (userId) => {
+  const {data} = await $host.get('api/favoriteingredient/user/all/' + userId)
+  return data
+}
+
+export const getUnlovedIngredient = async (userId) => {
+  const {data} = await $host.get('api/unlovedingredient/user/all/' + userId)
+  return data
+}
+
+export const getFavoriteProduct = async (userId) => {
+  const {data} = await $host.get('api/favoriteproduct/user/all/' + userId)
+  return data
+}

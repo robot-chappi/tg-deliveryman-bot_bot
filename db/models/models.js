@@ -47,6 +47,14 @@ const Type = sequelize.define('type', {
   title: {type: DataTypes.STRING, allowNull: false},
 })
 
+const Review = sequelize.define('review', {
+  id: {type: DataTypes.INTEGER, primaryKey: true, unique: true, autoIncrement: true},
+  text: {type: DataTypes.TEXT, allowNull: false},
+  mark: {type: DataTypes.INTEGER, allowNull: false},
+  chatId: {type: DataTypes.STRING, allowNull: false},
+  isChecked: {type: DataTypes.BOOLEAN, defaultValue: false},
+})
+
 const Ingredient = sequelize.define('ingredient', {
   id: {type: DataTypes.INTEGER, primaryKey: true, unique: true, autoIncrement: true},
   title: {type: DataTypes.STRING, allowNull: false},
@@ -100,7 +108,8 @@ const Order = sequelize.define('order', {
   phoneNumber: {type: DataTypes.STRING, allowNull: false},
   wish: {type: DataTypes.STRING},
   price: {type: DataTypes.INTEGER, allowNull: false},
-  isComplete: {type: DataTypes.BOOLEAN, defaultValue: false}
+  isComplete: {type: DataTypes.BOOLEAN, defaultValue: false},
+  isPaid: {type: DataTypes.BOOLEAN, defaultValue: false}
   // From User (userId)
   // favoriteCategory
   // favoriteIngredients
@@ -182,6 +191,9 @@ Order.belongsTo(TypeOrder);
 User.hasMany(Order)
 Order.belongsTo(User)
 
+User.hasMany(Review)
+Review.belongsTo(User)
+
 
 Role.hasMany(User)
 // default user
@@ -207,6 +219,7 @@ Product.belongsToMany(Ingredient, {through: IngredientProduct})
 
 module.exports = {
   User,
+  Review,
   Role,
   Tariff,
   Privilege,
