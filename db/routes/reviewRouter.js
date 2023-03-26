@@ -10,7 +10,8 @@ router.get('/checked', reviewController.getCheckedReviews)
 router.get('/user/all/:chatId', reviewController.getUserReviews)
 router.get('/:id', reviewController.getReview)
 router.delete('/:id', checkRoleMiddleware(['admin']), reviewController.deleteReview)
-router.delete('/user/:id', reviewController.deleteReviewUser)
+router.delete('/user', reviewController.deleteUserReview)
+router.delete('/user/:chatId', reviewController.deleteUserReviews)
 
 
 module.exports = router

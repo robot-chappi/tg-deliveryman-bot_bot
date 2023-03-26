@@ -8,6 +8,8 @@ import leaveReview from './modules/leaveReview'
 import {changeUserTariff, getFavoriteIngredient, getFavoriteProduct, getMe, getUnlovedIngredient} from './http/userAPI'
 import {getTariffItems} from './http/tariffAPI'
 import {getMealPlan, getOrder, getOrders, deleteOrders, deleteOrder} from './http/orderAPI'
+import {deleteUserReviews, getUserReviews} from './http/reviewAPI'
+import deleteReviewFsm from './modules/deleteReviewFsm'
 // import sequelize from '../db/db'
 const express = require('express')
 const cors = require('cors')
@@ -160,6 +162,20 @@ export default class Bot {
           return leaveReview(message, this.client)
         }
 
+        if (text === 'Посмотреть свои отзывы ✅') {
+          const userReviews = await getUserReviews(chatId);
+
+          return this.client.sendMessage(chatId, `Все твои отзывы:\n\n${userReviews.map((i) => {return `ID: ${i.id}\nОтзыв: ${i.text}\nОценка: ${i.mark}/10\nОпубликован: ${i.isChecked ? 'да' : 'нет'}\n\n`}).join('')}Вы можете удалить все или один отзыв, а так же когда пройдет модерация - увидеть свой отзыв в нашем магазине! 🙂`, {
+            reply_markup: JSON.stringify({
+              inline_keyboard: [
+                [{text: 'Удалить всё ❌', callback_data: 'deleteAllReviews'}],
+                [{text: 'Удалить один 📝', callback_data: 'deleteOneReview'}],
+                [{text: 'Хорошо 👍', callback_data: 'ok'}],
+              ]
+            })
+          })
+        }
+
         if (text === 'Аккаунт 📃') {
           const user = await getMe(chatId);
           await this.client.sendMessage(chatId, `Данные о тебе: 📰\n\nИмя: ${user.name}\nТелефон: ${user.phoneNumber}\nАдрес: ${user.address}\nТариф: ${user.tariff.title}\nРоль: ${user.role.title}`, {
@@ -303,6 +319,15 @@ export default class Bot {
 
         if (data === 'think') {
           return this.client.sendMessage(chatId, 'Хорошо, подумаем! Ну пока перейдем на главную 🚗', botOptions)
+        }
+
+        if (data === 'deleteAllReviews') {
+          await deleteUserReviews(chatId);
+          return this.client.sendMessage(chatId, 'Хорошо, всё удалено! Теперь перейдем на главную 🚗', botOptions)
+        }
+
+        if (data === 'deleteOneReview') {
+          return deleteReviewFsm(message, this.client)
         }
 
         if (data === 'delete-orders') {

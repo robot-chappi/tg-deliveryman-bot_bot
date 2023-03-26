@@ -1,6 +1,7 @@
 const ApiError = require('../error/ApiError')
-const {Review} = require('../models/models')
+const {Review, User} = require('../models/models')
 const {createReviewValidation} = require('../validations/review/createReviewValidation')
+const {deleteReviewValidation} = require('../validations/review/deleteReviewValidation')
 
 class ReviewController {
   async getReviews(req, res) {
@@ -60,7 +61,8 @@ class ReviewController {
         return next(ApiError.badRequest('Что-то неправильно введено'))
       }
       const {text, mark, chatId, isChecked} = req.body
-      const review = await Review.create({text: text, mark: mark, chatId: chatId, isChecked: isChecked})
+      const user = await User.findOne({where: {chatId: chatId}})
+      const review = await Review.create({text: text, mark: mark, chatId: chatId, isChecked: isChecked, userId: user.id})
       return res.json(review);
     } catch (e) {
       console.log(e)
@@ -77,11 +79,25 @@ class ReviewController {
     }
   }
 
-  async deleteReviewUser(req, res) {
+  async deleteUserReview(req, res, next) {
     try {
+      const {error} = deleteReviewValidation(req.body);
+      if(error) {
+        return next(ApiError.badRequest('Что-то неправильно введено'))
+      }
       const {review_id, chatId} = req.body
       const review = await Review.destroy({where: {id: review_id, chatId: chatId}})
       if (!review) return res.json({message: 'Ошибка', status: 'error'})
+      return res.json({message: 'Успешно удалено'})
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async deleteUserReviews(req, res) {
+    try {
+      const {chatId} = req.params
+      await Review.destroy({where: {chatId: chatId}})
       return res.json({message: 'Успешно удалено'})
     } catch (e) {
       console.log(e)
