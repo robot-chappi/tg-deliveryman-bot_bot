@@ -10,8 +10,9 @@ export const getUserReviews = async (chatId) => {
   return data
 }
 
-export const deleteUserReview = async (review) => {
-  const {data} = await $host.delete('api/review/user/', review)
+export const deleteUserReview = async (review_id, chat_id) => {
+  console.log(review_id, chat_id)
+  const {data} = await $host.delete('api/review/user', {params: {review_id: review_id, chat_id: chat_id}})
   return data
 }
 

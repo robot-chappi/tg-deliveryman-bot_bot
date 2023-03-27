@@ -102,7 +102,7 @@ export default async function leaveReview (message, client) {
       let event = eventFromStateAndMessageText(fsm.current, text)
 
       if (!event || fsm.cannot(event)) {
-        client.sendMessage(message.message.chat.id, 'Что-то пошло не так, попробуй снова /start 😩')
+        client.sendMessage(message.message.chat.id, 'Что-то пошло не так, попробуй снова /reload 😩')
         break
       }
 

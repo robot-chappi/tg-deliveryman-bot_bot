@@ -81,13 +81,10 @@ class ReviewController {
 
   async deleteUserReview(req, res, next) {
     try {
-      const {error} = deleteReviewValidation(req.body);
-      if(error) {
-        return next(ApiError.badRequest('Что-то неправильно введено'))
-      }
-      const {review_id, chatId} = req.body
-      const review = await Review.destroy({where: {id: review_id, chatId: chatId}})
+      const {review_id, chat_id} = req.query
+      const review = await Review.destroy({where: {id: Number(review_id), chatId: String(chat_id)}})
       if (!review) return res.json({message: 'Ошибка', status: 'error'})
+
       return res.json({message: 'Успешно удалено'})
     } catch (e) {
       console.log(e)

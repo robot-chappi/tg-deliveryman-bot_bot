@@ -9,9 +9,9 @@ router.get('/all', checkRoleMiddleware(['admin']), reviewController.getReviews)
 router.get('/checked', reviewController.getCheckedReviews)
 router.get('/user/all/:chatId', reviewController.getUserReviews)
 router.get('/:id', reviewController.getReview)
-router.delete('/:id', checkRoleMiddleware(['admin']), reviewController.deleteReview)
 router.delete('/user', reviewController.deleteUserReview)
 router.delete('/user/:chatId', reviewController.deleteUserReviews)
+router.delete('/:id', checkRoleMiddleware(['admin']), reviewController.deleteReview)
 
 
 module.exports = router
