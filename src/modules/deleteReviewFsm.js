@@ -66,6 +66,7 @@ export default async function deleteReviewFsm (message, client) {
     fsm.ongotstart = () => {
       if (reviews.length < 1) {
         lastMessage = client.sendMessage(newMessage.chat.id, 'Отзывов нет!', botOptions)
+        return lastMessage;
       }
       lastMessage = client.sendMessage(newMessage.chat.id,
         `Итак, какой отзыв будешь удалять? 🤨 (напиши ID своего отзыва)\n\n${reviews.map((i) => {return `ID: ${i.id}\nОтзыв: ${i.text}\nОценка: ${i.mark}/10\nОпубликован: ${i.isChecked ? 'да' : 'нет'}\n\n`}).join('')}`,
