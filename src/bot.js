@@ -148,6 +148,8 @@ export default class Bot {
         }
 
         if (text === 'Открыть магазин 🛍') {
+          const user = await getMe(chatId);
+          if (!user) return this.client.sendMessage(chatId, 'Зарегистрируйся по функции /start 🙂')
           return this.client.sendMessage(chatId, 'В моем магазине по доставке ты сможешь найти кучу вкусных блюд, ' +
             'которые точно тебе приглянутся! Просто настрой свой день на каждый день недели, а затем я свяжусь с тобой и мы утвердим доставку! 🍓', {
               reply_markup: JSON.stringify({
@@ -159,10 +161,16 @@ export default class Bot {
         }
 
         if (text === 'Оставить отзыв 📝') {
+          const user = await getMe(chatId);
+          if (!user) return this.client.sendMessage(chatId, 'Зарегистрируйся по функции /start 🙂')
+
           return leaveReview(message, this.client)
         }
 
         if (text === 'Посмотреть свои отзывы ✅') {
+          const user = await getMe(chatId);
+          if (!user) return this.client.sendMessage(chatId, 'Зарегистрируйся по функции /start 🙂')
+
           const userReviews = await getUserReviews(chatId);
 
           return this.client.sendMessage(chatId, `Все твои отзывы:\n\n${userReviews.map((i) => {return `ID: ${i.id}\nОтзыв: ${i.text}\nОценка: ${i.mark}/10\nОпубликован: ${i.isChecked ? 'да' : 'нет'}\n\n`}).join('')}Вы можете удалить все или один отзыв, а так же когда пройдет модерация - увидеть свой отзыв в нашем магазине! 🙂`, {
@@ -178,6 +186,9 @@ export default class Bot {
 
         if (text === 'Аккаунт 📃') {
           const user = await getMe(chatId);
+          if (!user) return this.client.sendMessage(chatId, 'Зарегистрируйся по функции /start 🙂')
+
+          // const user = await getMe(chatId);
           await this.client.sendMessage(chatId, `Данные о тебе: 📰\n\nИмя: ${user.name}\nТелефон: ${user.phoneNumber}\nАдрес: ${user.address}\nТариф: ${user.tariff.title}\nРоль: ${user.role.title}`, {
             reply_markup: JSON.stringify({
               remove_keyboard: true
@@ -194,8 +205,11 @@ export default class Bot {
         }
 
         if (text === 'Тарифы 🍨') {
-          const tariffItems = await getTariffItems();
           const user = await getMe(chatId);
+          if (!user) return this.client.sendMessage(chatId, 'Зарегистрируйся по функции /start 🙂')
+
+          const tariffItems = await getTariffItems();
+          // const user = await getMe(chatId);
           let tariffKeyboard = []
           let otherTariff = tariffItems.filter(function( obj ) {
             return obj.id !== user.tariff.id;
@@ -216,11 +230,15 @@ export default class Bot {
         }
 
         if (text === 'Информация о компании 📈') {
+          const user = await getMe(chatId);
+          if (!user) return this.client.sendMessage(chatId, 'Зарегистрируйся по функции /start 🙂')
           return this.client.sendMessage(chatId, `Мы доставляем еду каждый день и решаем сразу несколько проблем 🤜\n\n1. Не нужно думать чего бы поесть утром/днем/вечером 😊\n2. Не нужно тратить время на готовку 👀\n3. Не нужно уметь готовить, чтобы вкусно поесть 😬\n\nПожалуй это все 😎`)
         }
 
         if (text === 'Мои заказы 💵') {
           const user = await getMe(chatId);
+          if (!user) return this.client.sendMessage(chatId, 'Зарегистрируйся по функции /start 🙂')
+          // const user = await getMe(chatId);
           const order = await getOrder(chatId);
 
           if (!order) {
@@ -289,6 +307,8 @@ export default class Bot {
         }
 
         if (data === 'changeData') {
+          const user = await getMe(chatId);
+          if (!user) return this.client.sendMessage(chatId, 'Зарегистрируйся по функции /start 🙂')
           return changeAccountData(message, this.client)
         }
 
@@ -314,6 +334,9 @@ export default class Bot {
         }
 
         if (data === 'pay') {
+          const user = await getMe(chatId);
+          if (!user) return this.client.sendMessage(chatId, 'Зарегистрируйся по функции /start 🙂')
+
           return this.client.sendMessage(chatId, 'Оплата в разработке...', botOptions)
         }
 
