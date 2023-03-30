@@ -59,6 +59,18 @@ class UserController {
     }
   }
 
+  async getMyFavoriteProduct(req, res) {
+    try {
+      const {chatId} = req.params
+      const user = await User.findOne({where: {chatId: chatId}})
+      if (!user) return res.json('Error!')
+      const favoriteProduct = await FavoriteProduct.findOne({where: {userId: user.id}})
+      return res.json(favoriteProduct)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async createUser(req, res, next) {
     // mealPlan
     try {

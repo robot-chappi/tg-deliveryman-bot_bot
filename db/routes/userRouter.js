@@ -6,6 +6,7 @@ const router = new Router()
 
 router.post('/', userController.createUser)
 router.get('/me/:chatId', userController.getMe)
+router.get('/me/favoriteproduct/:chatId', userController.getMyFavoriteProduct)
 router.post('/token/:chatId', userController.getToken)
 router.get('/all', checkRoleMiddleware(['admin']), userController.getUsers)
 router.get('/:id', authMiddleware, userController.getUser)

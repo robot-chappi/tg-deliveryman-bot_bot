@@ -43,8 +43,10 @@ class FavoriteProductController {
   async deleteFavoriteProductsProducts(req, res) {
     try {
       const {id} = req.params
-      if (!await FavoriteProduct.findOne({where: {userId: id}})) return res.json('Ошибка');
-      await FavoriteProductProduct.destroy({where: {favoriteProductId: id}})
+      // changed
+      const favoriteProduct = await FavoriteProduct.findOne({where: {userId: id}})
+      if (!favoriteProduct) return res.json('Ошибка');
+      await FavoriteProductProduct.destroy({where: {favoriteProductId: favoriteProduct.id}})
       return res.json({message: 'Успешно удалено'})
     } catch (e) {
       console.log(e)
