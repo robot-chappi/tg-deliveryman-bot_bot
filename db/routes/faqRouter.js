@@ -4,6 +4,7 @@ const checkRoleMiddleware = require('../middleware/checkRoleMiddleware')
 const router = new Router()
 
 router.post('/', checkRoleMiddleware(['admin']), faqController.createFaq)
+router.get('/pagination', faqController.paginationFaq)
 router.get('/all', faqController.getFaqs)
 router.get('/:id', faqController.getFaq)
 router.delete('/:id', checkRoleMiddleware(['admin']), faqController.deleteFaq)

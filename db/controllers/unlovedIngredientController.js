@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {UnlovedIngredientIngredient, UnlovedIngredient} = require('../models/models')
+const {UnlovedIngredientIngredient, UnlovedIngredient, User, FavoriteIngredientIngredient} = require('../models/models')
 const {createUnlovedIngredientsValidation} = require('../validations/unlovedIngredients/createUnlovedIngredientsValidation')
 const {deleteUnlovedIngredientsValidation} = require('../validations/unlovedIngredients/deleteUnlovedIngredientsValidation')
 
@@ -25,6 +25,18 @@ class UnlovedIngredientController {
     }
   }
 
+  async getUserChatUnlovedIngredients(req, res) {
+    try {
+      const {chatId} = req.params
+      const user = await User.findOne({where: {chatId: chatId}})
+      const unlovedIngredientItem = await UnlovedIngredient.findOne({where: {userId: user.id}})
+      const unlovedIngredientIngredients = await UnlovedIngredientIngredient.findAll({where: {unlovedIngredientId: unlovedIngredientItem.id}, include: ['unloved_ingredient', 'ingredient']})
+      return res.json(unlovedIngredientIngredients)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async createUnlovedIngredients(req, res, next) {
     try {
       const {error} = createUnlovedIngredientsValidation(req.body);
@@ -33,6 +45,7 @@ class UnlovedIngredientController {
       }
       const {unloved_ingredient_id, ingredient_id} = req.body
       if (!await UnlovedIngredient.findOne({where: {userId: unloved_ingredient_id}})) return res.json('Ошибка');
+      if (!await FavoriteIngredientIngredient.findOne({where: {ingredientId: ingredient_id}})) return res.json('Ошибка, ингредиент уже добавлен в любимые!');
       const unlovedIngredientsIngredient = await UnlovedIngredientIngredient.create({unlovedIngredientId: unloved_ingredient_id, ingredientId: ingredient_id})
       return res.json(unlovedIngredientsIngredient);
     } catch (e) {

@@ -13,6 +13,19 @@ class FaqController {
     }
   }
 
+  async paginationFaq(req, res) {
+    try {
+      let {limit, page} = req.query
+      page = page || 1
+      limit = limit || 3
+      let offset = page * limit - limit
+      const faqs = await Faq.findAndCountAll({limit: limit, offset: offset});
+      return res.json(faqs);
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async getFaq(req, res) {
     try {
       const {id} = req.params

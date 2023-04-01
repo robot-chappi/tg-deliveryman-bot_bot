@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {FavoriteProduct, FavoriteProductProduct} = require('../models/models')
+const {FavoriteProduct, FavoriteProductProduct, User} = require('../models/models')
 const {createFavoriteProductsValidation} = require('../validations/favoriteProducts/createFavoriteProductsValidation')
 const {deleteFavoriteProductsValidation} = require('../validations/favoriteProducts/deleteFavoriteProductsValidation')
 
@@ -18,6 +18,18 @@ class FavoriteProductController {
     try {
       const {userId} = req.params
       const favoriteProductItem = await FavoriteProduct.findOne({where: {userId: userId}})
+      const favoriteProductProducts = await FavoriteProductProduct.findAll({where: {favoriteProductId: favoriteProductItem.id}, include: ['favorite_product', 'product']})
+      return res.json(favoriteProductProducts)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async getUserChatFavoriteProducts(req, res) {
+    try {
+      const {chatId} = req.params
+      const user = await User.findOne({where: {chatId: chatId}})
+      const favoriteProductItem = await FavoriteProduct.findOne({where: {userId: user.id}})
       const favoriteProductProducts = await FavoriteProductProduct.findAll({where: {favoriteProductId: favoriteProductItem.id}, include: ['favorite_product', 'product']})
       return res.json(favoriteProductProducts)
     } catch (e) {
@@ -53,13 +65,10 @@ class FavoriteProductController {
     }
   }
 
-  async deleteFavoriteProductsProduct(req, res, next) {
+  async deleteFavoriteProductsProduct(req, res) {
     try {
-      const {error} = deleteFavoriteProductsValidation(req.body);
-      if(error) {
-        return next(ApiError.badRequest('Не указаны правильно данные'))
-      }
-      const {favorite_product_id, favorite_product_product_id} = req.body
+      const {favorite_product_id, favorite_product_product_id} = req.query
+
       if (!await FavoriteProductProduct.findOne({where: {id: favorite_product_product_id}})) return res.json('Ошибка');
 
       await FavoriteProductProduct.destroy({where: {id: favorite_product_product_id, favoriteProductId: favorite_product_id}})

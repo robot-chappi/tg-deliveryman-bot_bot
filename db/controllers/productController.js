@@ -26,8 +26,6 @@ class ProductController {
         return product.getIngredients()
       })
 
-      console.log(product)
-
       return res.json({product: productItem, ingredients: product})
     } catch (e) {
       console.log(e)
@@ -42,16 +40,16 @@ class ProductController {
       let offset = page * limit - limit
       let products;
       if (!categoryId && !typeId) {
-        products = await Product.findAndCountAll({limit: limit, offset: offset});
+        products = await Product.findAndCountAll({limit: limit, offset: offset, include: ["category", "type"]});
       }
       if (categoryId && !typeId) {
-        products = await Product.findAndCountAll({where: {categoryId: categoryId}, limit: limit, offset: offset});
+        products = await Product.findAndCountAll({where: {categoryId: categoryId}, limit: limit, offset: offset, include: ["category", "type"]});
       }
       if (!categoryId && typeId) {
-        products = await Product.findAndCountAll({where: {typeId: typeId}, limit: limit, offset: offset});
+        products = await Product.findAndCountAll({where: {typeId: typeId}, limit: limit, offset: offset, include: ["category", "type"]});
       }
       if (categoryId && typeId) {
-        products = await Product.findAndCountAll({where: {categoryId: categoryId, typeId: typeId}, limit: limit, offset: offset});
+        products = await Product.findAndCountAll({where: {categoryId: categoryId, typeId: typeId}, limit: limit, offset: offset, include: ["category", "type"]});
       }
 
       return res.json(products);
