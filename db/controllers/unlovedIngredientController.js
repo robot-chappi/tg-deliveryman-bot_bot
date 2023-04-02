@@ -43,11 +43,20 @@ class UnlovedIngredientController {
       if(error) {
         return next(ApiError.badRequest('Не указаны правильно данные'))
       }
-      const {unloved_ingredient_id, ingredient_id} = req.body
-      if (!await UnlovedIngredient.findOne({where: {userId: unloved_ingredient_id}})) return res.json('Ошибка');
-      if (!await FavoriteIngredientIngredient.findOne({where: {ingredientId: ingredient_id}})) return res.json('Ошибка, ингредиент уже добавлен в любимые!');
-      const unlovedIngredientsIngredient = await UnlovedIngredientIngredient.create({unlovedIngredientId: unloved_ingredient_id, ingredientId: ingredient_id})
-      return res.json(unlovedIngredientsIngredient);
+      const {favorite_ingredient_id, unloved_ingredient_id, ingredient_id} = req.body
+      const favoriteIngIng = await FavoriteIngredientIngredient.findOne({where: {favoriteIngredientId: favorite_ingredient_id, ingredientId: ingredient_id}, include: ['favorite_ingredient', 'ingredient']});
+      const unlovedIngIng = await UnlovedIngredientIngredient.findOne({where: {unlovedIngredientId: unloved_ingredient_id, ingredientId: ingredient_id}, include: ['unloved_ingredient', 'ingredient']});
+      if (!await UnlovedIngredient.findOne({where: {userId: unloved_ingredient_id}})) return res.json({message: 'Ошибка', error: true});
+      if (favoriteIngIng) {
+        await favoriteIngIng.destroy()
+      }
+      if (unlovedIngIng) {
+        let name = unlovedIngIng.ingredient.title
+        await unlovedIngIng.destroy()
+        return res.json({message: `${name} - удален из Нелюбимого`})
+      }
+      await UnlovedIngredientIngredient.create({unlovedIngredientId: unloved_ingredient_id, ingredientId: ingredient_id})
+      return res.json({message: 'Добавлен в Нелюбимое'});
     } catch (e) {
       console.log(e)
     }
@@ -64,13 +73,9 @@ class UnlovedIngredientController {
     }
   }
 
-  async deleteUnlovedIngredientsIngredient(req, res, next) {
+  async deleteUnlovedIngredientsIngredient(req, res) {
     try {
-      const {error} = deleteUnlovedIngredientsValidation(req.body);
-      if(error) {
-        return next(ApiError.badRequest('Не указаны правильно данные'))
-      }
-      const {unloved_ingredient_id, unloved_ingredient_ingredient_id} = req.body
+      const {unloved_ingredient_id, unloved_ingredient_ingredient_id} = req.query
       if (!await UnlovedIngredientIngredient.findOne({where: {id: unloved_ingredient_ingredient_id}})) return res.json('Ошибка');
 
       await UnlovedIngredientIngredient.destroy({where: {id: unloved_ingredient_ingredient_id, unlovedIngredientId: unloved_ingredient_id}})

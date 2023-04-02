@@ -43,11 +43,20 @@ class FavoriteIngredientController {
       if(error) {
         return next(ApiError.badRequest('Не указаны правильно данные'))
       }
-      const {favorite_ingredient_id, ingredient_id} = req.body
-      if (!await FavoriteIngredient.findOne({where: {userId: favorite_ingredient_id}})) return res.json('Ошибка');
-      if (!await UnlovedIngredientIngredient.findOne({where: {ingredientId: ingredient_id}})) return res.json('Ошибка, ингредиент уже добавлен в нелюбимые!');
-      const favoriteIngredientsIngredient = await FavoriteIngredientIngredient.create({favoriteIngredientId: favorite_ingredient_id, ingredientId: ingredient_id})
-      return res.json(favoriteIngredientsIngredient);
+      const {unloved_ingredient_id, favorite_ingredient_id, ingredient_id} = req.body
+      const unlovedIngIng = await UnlovedIngredientIngredient.findOne({where: {unlovedIngredientId: unloved_ingredient_id, ingredientId: ingredient_id}, include: ['unloved_ingredient', 'ingredient']})
+      const favoriteIngIng = await FavoriteIngredientIngredient.findOne({where: {favoriteIngredientId: favorite_ingredient_id, ingredientId: ingredient_id}, include: ['favorite_ingredient', 'ingredient']})
+      if (!await FavoriteIngredient.findOne({where: {userId: favorite_ingredient_id}})) return res.json({message: 'Ошибка', error: true});
+      if (unlovedIngIng) {
+        await unlovedIngIng.destroy()
+      }
+      if (favoriteIngIng) {
+        let name = favoriteIngIng.ingredient.title;
+        await favoriteIngIng.destroy()
+        return res.json({message: `${name} - удален из Любимого`})
+      }
+      await FavoriteIngredientIngredient.create({favoriteIngredientId: favorite_ingredient_id, ingredientId: ingredient_id})
+      return res.json({message: 'Добавлен в Любимое'});
     } catch (e) {
       console.log(e)
     }

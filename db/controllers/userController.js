@@ -71,6 +71,30 @@ class UserController {
     }
   }
 
+  async getMyFavoriteIngredient(req, res) {
+    try {
+      const {chatId} = req.params
+      const user = await User.findOne({where: {chatId: chatId}})
+      if (!user) return res.json('Error!')
+      const favoriteIngredient = await FavoriteIngredient.findOne({where: {userId: user.id}})
+      return res.json(favoriteIngredient)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async getMyUnlovedIngredient(req, res) {
+    try {
+      const {chatId} = req.params
+      const user = await User.findOne({where: {chatId: chatId}})
+      if (!user) return res.json('Error!')
+      const unlovedIngredient = await UnlovedIngredient.findOne({where: {userId: user.id}})
+      return res.json(unlovedIngredient)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async createUser(req, res, next) {
     // mealPlan
     try {
