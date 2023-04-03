@@ -91,7 +91,8 @@ const UnlovedIngredientIngredient = sequelize.define('unloved_ingredient_ingredi
 })
 
 const MealPlan = sequelize.define('mealplan', {
-  id: {type: DataTypes.INTEGER, primaryKey: true, unique: true, autoIncrement: true}
+  id: {type: DataTypes.INTEGER, primaryKey: true, unique: true, autoIncrement: true},
+  price: {type: DataTypes.INTEGER, allowNull: true},
 })
 
 const MealPlanProduct = sequelize.define('mealplan_product', {
@@ -107,7 +108,6 @@ const Order = sequelize.define('order', {
   address: {type: DataTypes.STRING, allowNull: false},
   phoneNumber: {type: DataTypes.STRING, allowNull: false},
   wish: {type: DataTypes.STRING},
-  price: {type: DataTypes.INTEGER, allowNull: false},
   isComplete: {type: DataTypes.BOOLEAN, defaultValue: false},
   isPaid: {type: DataTypes.BOOLEAN, defaultValue: false}
   // From User (userId)
@@ -182,8 +182,8 @@ Ingredient.hasMany(UnlovedIngredientIngredient);
 UnlovedIngredientIngredient.belongsTo(Ingredient)
 
 // order
-Category.hasMany(Order)
-Order.belongsTo(Category);
+Category.hasMany(MealPlan)
+MealPlan.belongsTo(Category);
 
 TypeOrder.hasMany(Order)
 Order.belongsTo(TypeOrder);

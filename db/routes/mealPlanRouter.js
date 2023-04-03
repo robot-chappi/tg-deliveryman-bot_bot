@@ -7,6 +7,7 @@ router.post('/', authMiddleware, mealPlanController.createMealPlanProduct)
 router.post('/products', authMiddleware, mealPlanController.createMealPlanProducts)
 router.get('/all/:id', authMiddleware, mealPlanController.getMealPlanProducts)
 router.get('/user/all/:orderId', mealPlanController.getUserMealPlanProducts)
+router.patch('/:id', authMiddleware, mealPlanController.patchMealPlanPrice)
 router.delete('/all/:id', authMiddleware, mealPlanController.deleteMealPlanProducts)
 router.delete('/', authMiddleware, mealPlanController.deleteMealPlanProduct)
 

@@ -1,8 +1,9 @@
 const ApiError = require('../error/ApiError')
-const {MealPlan, MealPlanProduct, FavoriteIngredient, FavoriteIngredientIngredient} = require('../models/models')
+const {MealPlan, MealPlanProduct, FavoriteIngredient, FavoriteIngredientIngredient, Order} = require('../models/models')
 const {createMealPlanProductsValidation} = require('../validations/mealPlanProducts/createMealPlanProductsValidation')
 const {deleteMealPlanProductsValidation} = require('../validations/mealPlanProducts/deleteMealPlanProductsValidation')
 const {createMealPlanProductValidation} = require('../validations/mealPlanProducts/createMealPlanProductValidation')
+const {updateOrderValidation} = require('../validations/order/updateOrderValidation')
 
 class MealPlanController {
   async getMealPlanProducts(req, res) {
@@ -142,6 +143,18 @@ class MealPlanController {
 
       await MealPlanProduct.destroy({where: {id: meal_plan_product_id, mealplanId: meal_plan_id}})
       return res.json({message: 'Успешно удалено'})
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async patchMealPlanPrice(req, res) {
+    try {
+      const {id} = req.params
+      const {price} = req.body
+      await MealPlan.update({price: price}, {where: {id: id}})
+
+      return res.json({message: 'Обновлено!'});
     } catch (e) {
       console.log(e)
     }

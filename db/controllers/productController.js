@@ -65,13 +65,16 @@ class ProductController {
       if(error) {
         return next(ApiError.badRequest('Что-то введено не верно'))
       }
-      const {title, weight, description, price, categoryId, typeId, ingredients} = req.body
-      const {image} = req.files
+      const {title, image, weight, description, price, categoryId, typeId, ingredients} = req.body
+      const imageFile = req.files ? req.files['imageFile'] : false
 
-      let fileName = uuid.v4() + ".jpg"
-      image.mv(path.resolve(__dirname, '..', 'static', fileName))
+      let fileName;
+      if (imageFile) {
+        fileName = uuid.v4() + ".jpg"
+        imageFile.mv(path.resolve(__dirname, '..', 'static', fileName))
+      }
+      const product = await Product.create({title, description, price, weight, image: imageFile ? fileName : image, categoryId: categoryId, typeId: typeId})
 
-      const product = await Product.create({title, description, price, weight, image: fileName, categoryId: categoryId, typeId: typeId})
       for (const i of ingredients) {
         const ingredient = await Ingredient.findOne({where: {id: i.id}})
         product.addIngredient(ingredient)
@@ -99,7 +102,8 @@ class ProductController {
           });
         });
       await Product.destroy({where: {id: id}})
-      fs.unlinkSync(path.resolve(__dirname, '..', 'static', filePath))
+
+      if (!filePath.includes('http')) fs.unlinkSync(path.resolve(__dirname, '..', 'static', filePath))
       return res.json({message: 'Успешно удалено'})
     } catch (e) {
       console.log(e)
@@ -108,25 +112,40 @@ class ProductController {
 
   async patchProduct(req, res, next) {
     try {
-      const {error} = updateProductValidation(req.body);
-      if(error) {
-        return next(ApiError.badRequest('Что-то не правильно введено'))
-      }
+      // const {error} = updateProductValidation(req.body);
+      // if(error) {
+      //   return next(ApiError.badRequest('Что-то не правильно введено'))
+      // }
 
       const {id} = req.params
-      const {title, weight, description, price, categoryId, typeId, ingredients} = req.body
-      const {image} = req.files
+      const {title, weight, description, image, price, categoryId, typeId, ingredients} = req.body
+      const imageFile = req.files ? req.files['imageFile'] : false
+
+      let staticImage;
+      function checkFileExistsSync(filepath){
+        staticImage = true;
+        try{
+          fs.accessSync(filepath, fs.F_OK);
+        }catch(e){
+          staticImage = false;
+        }
+        return staticImage;
+      }
+      checkFileExistsSync(path.resolve(__dirname, '..', 'static', image))
+
+      if (staticImage) {
+        fs.unlinkSync(path.resolve(__dirname, '..', 'static', product.image))
+      }
 
       const product = await Product.findOne({where: {id: id}})
 
-      if (image) {
+      let fileName;
+      if (imageFile) {
         fs.unlinkSync(path.resolve(__dirname, '..', 'static', product.image))
-        let fileName = uuid.v4() + ".jpg"
-        image.mv(path.resolve(__dirname, '..', 'static', fileName))
-
-        await product.update({image: fileName})
+        fileName = uuid.v4() + ".jpg"
+        imageFile.mv(path.resolve(__dirname, '..', 'static', fileName))
       }
-      await product.update({title: title, description: description, price: price, weight: weight, categoryId: categoryId, typeId: typeId})
+      await product.update({title: title, description: description, image: imageFile ? fileName : image, price: price, weight: weight, categoryId: categoryId, typeId: typeId})
       const productItem = await product.getIngredients()
 
 

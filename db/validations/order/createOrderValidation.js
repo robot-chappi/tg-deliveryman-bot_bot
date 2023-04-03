@@ -7,12 +7,12 @@ exports.createOrderValidation = (data) => {
     phoneNumber: Joi.string(),
     address: Joi.string(),
     wish: Joi.string(),
-    price: Joi.number(),
+    price: Joi.number().allow(null),
     isComplete: Joi.boolean(),
     isPaid: Joi.boolean(),
     category_id: Joi.number(),
-    user_id: Joi.number(),
     typeOrderId: Joi.number(),
+    user_id: Joi.number(),
 
   })
 

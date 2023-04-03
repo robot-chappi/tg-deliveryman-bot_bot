@@ -7,8 +7,6 @@ exports.updateOrderValidation = (data) => {
     phoneNumber: Joi.string(),
     address: Joi.string(),
     wish: Joi.string(),
-    price: Joi.number(),
-    category_id: Joi.number(),
     user_id: Joi.number(),
     typeOrderId: Joi.number(),
   })

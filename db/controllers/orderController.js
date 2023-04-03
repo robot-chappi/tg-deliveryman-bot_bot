@@ -8,7 +8,7 @@ const {or} = require('sequelize')
 class OrderController {
   async getOrders(req, res) {
     try {
-      const orders = await Order.findAll({ include: ["user", "category", "type_order"]})
+      const orders = await Order.findAll({ include: ["user", "type_order"]})
       return res.json(orders)
     } catch (e) {
       console.log(e)
@@ -19,7 +19,7 @@ class OrderController {
     try {
       const {chatId} = req.params
 
-      const order = await Order.findOne({where: {chatId: chatId, isPaid: false}, include: ["user", "category", "type_order"]})
+      const order = await Order.findOne({where: {chatId: chatId, isPaid: false}, include: ["user", "type_order"]})
       // if (!order) return res.json({message: 'Не найдено'})
 
       return res.json(order)
@@ -31,7 +31,7 @@ class OrderController {
   async getAllUserOrders(req, res) {
     try {
       const {chatId} = req.params
-      const orders = await Order.findAll({where: {chatId: chatId}, include: ["user", "category", "type_order"]})
+      const orders = await Order.findAll({where: {chatId: chatId}, include: ["user", "type_order"]})
       // if (!orders) return res.json({message: 'Не найдено'})
 
       return res.json(orders)
@@ -43,7 +43,7 @@ class OrderController {
   async getOrder(req, res) {
     try {
       const {id} = req.params
-      const order = await Order.findOne({where: {id: id}, include: ["user", "category", "type_order"]})
+      const order = await Order.findOne({where: {id: id}, include: ["user", "type_order"]})
 
       return res.json(order)
     } catch (e) {
@@ -63,7 +63,7 @@ class OrderController {
       findOrder.forEach(i => {
         if (i.isPaid !== true) return res.json({message: 'Заказ уже сушествует, удалите его или оплатите'})
       })
-      const order = await Order.create({chatId, fullname, phoneNumber, address, wish, price, isComplete, isPaid, categoryId: category_id, userId: user_id, typeOrderId: typeOrderId, mealplan: {}}, {include: [{
+      const order = await Order.create({chatId, fullname, phoneNumber, address, wish, isComplete, isPaid, userId: user_id, typeOrderId: typeOrderId, mealplan: {categoryId: category_id, price: price}}, {include: [{
           model: MealPlan,
           as: 'mealplan'
         }]})
@@ -169,8 +169,8 @@ class OrderController {
       }
 
       const {id} = req.params
-      const {chatId, fullname, phoneNumber, address, wish, price, category_id, user_id, typeOrderId} = req.body
-      await Order.update({chatId: chatId, fullname: fullname, phoneNumber: phoneNumber, address: address, wish: wish, price: price, categoryId: category_id, userId: user_id, typeOrderId: typeOrderId}, {where: {id: id}})
+      const {chatId, fullname, phoneNumber, address, wish, user_id, typeOrderId} = req.body
+      await Order.update({chatId: chatId, fullname: fullname, phoneNumber: phoneNumber, address: address, wish: wish, userId: user_id, typeOrderId: typeOrderId}, {where: {id: id}})
 
       return res.json({message: 'Обновлено!'});
     } catch (e) {
