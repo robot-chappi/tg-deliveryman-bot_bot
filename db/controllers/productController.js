@@ -131,17 +131,23 @@ class ProductController {
         }
         return staticImage;
       }
-      checkFileExistsSync(path.resolve(__dirname, '..', 'static', image))
-
-      if (staticImage) {
-        fs.unlinkSync(path.resolve(__dirname, '..', 'static', product.image))
-      }
 
       const product = await Product.findOne({where: {id: id}})
 
+      if (!image.includes('http')) {
+        checkFileExistsSync(path.resolve(__dirname, '..', 'static', image))
+      }
+
+      let deletedImage = false;
+      if (staticImage && imageFile) {
+        fs.unlinkSync(path.resolve(__dirname, '..', 'static', product.image))
+        deletedImage = true
+      }
+
       let fileName;
       if (imageFile) {
-        fs.unlinkSync(path.resolve(__dirname, '..', 'static', product.image))
+        // try catch
+        if (!product.image.includes('http') && deletedImage === false) fs.unlinkSync(path.resolve(__dirname, '..', 'static', product.image))
         fileName = uuid.v4() + ".jpg"
         imageFile.mv(path.resolve(__dirname, '..', 'static', fileName))
       }
