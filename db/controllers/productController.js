@@ -112,15 +112,15 @@ class ProductController {
 
   async patchProduct(req, res, next) {
     try {
-      // const {error} = updateProductValidation(req.body);
-      // if(error) {
-      //   return next(ApiError.badRequest('Что-то не правильно введено'))
-      // }
+      const {error} = updateProductValidation(req.body);
+      if(error) {
+        return next(ApiError.badRequest('Что-то не правильно введено'))
+      }
 
       const {id} = req.params
-      let {title, weight, description, image, price, categoryId, typeId, ingredients} = req.body
+      const {title, weight, description, image, price, categoryId, typeId, ingredients} = req.body
       const imageFile = req.files ? req.files['imageFile'] : false
-      ingredients = [{id: 1}, {id: 2}]
+
       const product = await Product.findOne({where: {id: id}})
 
       if (!product.image.includes('http') && image.includes('http')) {

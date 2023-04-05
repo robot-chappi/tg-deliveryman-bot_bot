@@ -4,6 +4,8 @@ const {createMealPlanProductsValidation} = require('../validations/mealPlanProdu
 const {deleteMealPlanProductsValidation} = require('../validations/mealPlanProducts/deleteMealPlanProductsValidation')
 const {createMealPlanProductValidation} = require('../validations/mealPlanProducts/createMealPlanProductValidation')
 const {updateOrderValidation} = require('../validations/order/updateOrderValidation')
+const {where} = require('sequelize')
+const {createOrderMealPlanProductsValidation} = require('../validations/mealPlanProducts/createOrderMealPlanProductsValidation')
 
 class MealPlanController {
   async getMealPlanProducts(req, res) {
@@ -16,7 +18,7 @@ class MealPlanController {
     }
   }
 
-  async getUserMealPlanProducts(req, res) {
+  async getOrderMealPlanProducts(req, res) {
     try {
       const {orderId} = req.params
       const mealPlanItem = await MealPlan.findOne({where: {orderId: orderId}})
@@ -96,6 +98,50 @@ class MealPlanController {
           }
         }
       }
+
+      return res.json('Готово');
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async createOrderMealPlanProducts(req, res, next) {
+    try {
+      const {error} = createOrderMealPlanProductsValidation(req.body);
+      if(error) {
+        return next(ApiError.badRequest('Не указаны правильно данные'))
+      }
+      const {order_id, meal_plan_id, price, products} = req.body
+
+      if (!await MealPlan.findOne({where: {orderId: order_id}})) return res.json('Ошибка');
+
+      for (let productItems in products) {
+        for(let product in products[productItems]) {
+          if (productItems === 'Понедельник') {
+            await MealPlanProduct.create({name_day: productItems, slug_day: productItems.toLowerCase(), mealplanId: meal_plan_id, productId: products[productItems][product]['id']})
+          }
+          if (productItems === 'Вторник') {
+            await MealPlanProduct.create({name_day: productItems, slug_day: productItems.toLowerCase(), mealplanId: meal_plan_id, productId: products[productItems][product]['id']})
+          }
+          if (productItems === 'Среда') {
+            await MealPlanProduct.create({name_day: productItems, slug_day: productItems.toLowerCase(), mealplanId: meal_plan_id, productId: products[productItems][product]['id']})
+          }
+          if (productItems === 'Четверг') {
+            await MealPlanProduct.create({name_day: productItems, slug_day: productItems.toLowerCase(), mealplanId: meal_plan_id, productId: products[productItems][product]['id']})
+          }
+          if (productItems === 'Пятница') {
+            await MealPlanProduct.create({name_day: productItems, slug_day: productItems.toLowerCase(), mealplanId: meal_plan_id, productId: products[productItems][product]['id']})
+          }
+          if (productItems === 'Суббота') {
+            await MealPlanProduct.create({name_day: productItems, slug_day: productItems.toLowerCase(), mealplanId: meal_plan_id, productId: products[productItems][product]['id']})
+          }
+          if (productItems === 'Воскресенье') {
+            await MealPlanProduct.create({name_day: productItems, slug_day: productItems.toLowerCase(), mealplanId: meal_plan_id, productId: products[productItems][product]['id']})
+          }
+        }
+      }
+
+      if (price !== null) await MealPlan.update({price: price}, {where: {orderId: order_id}})
 
       return res.json('Готово');
     } catch (e) {

@@ -2,7 +2,6 @@ const ApiError = require('../error/ApiError')
 const {Order, MealPlan, MealPlanProduct} = require('../models/models')
 const {createOrderValidation} = require('../validations/order/createOrderValidation')
 const {updateOrderValidation} = require('../validations/order/updateOrderValidation')
-const {or} = require('sequelize')
 
 
 class OrderController {
@@ -19,7 +18,7 @@ class OrderController {
     try {
       const {chatId} = req.params
 
-      const order = await Order.findOne({where: {chatId: chatId, isPaid: false}, include: ["user", "type_order"]})
+      const order = await Order.findOne({where: {chatId: chatId, isPaid: false}, include: ["user", "type_order", "mealplan"]})
       // if (!order) return res.json({message: 'Не найдено'})
 
       return res.json(order)
