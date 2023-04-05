@@ -118,38 +118,29 @@ class ProductController {
       // }
 
       const {id} = req.params
-      const {title, weight, description, image, price, categoryId, typeId, ingredients} = req.body
+      let {title, weight, description, image, price, categoryId, typeId, ingredients} = req.body
       const imageFile = req.files ? req.files['imageFile'] : false
-
-      let staticImage;
-      function checkFileExistsSync(filepath){
-        staticImage = true;
-        try{
-          fs.accessSync(filepath, fs.F_OK);
-        }catch(e){
-          staticImage = false;
-        }
-        return staticImage;
-      }
-
+      ingredients = [{id: 1}, {id: 2}]
       const product = await Product.findOne({where: {id: id}})
 
-      if (!image.includes('http')) {
-        checkFileExistsSync(path.resolve(__dirname, '..', 'static', image))
-      }
-
-      let deletedImage = false;
-      if (staticImage && imageFile) {
-        fs.unlinkSync(path.resolve(__dirname, '..', 'static', product.image))
-        deletedImage = true
+      if (!product.image.includes('http') && image.includes('http')) {
+        try {
+          fs.unlinkSync(path.resolve(__dirname, '..', 'static', product.image))
+        } catch (e) {
+          console.log(e)
+        }
       }
 
       let fileName;
       if (imageFile) {
-        // try catch
-        if (!product.image.includes('http') && deletedImage === false) fs.unlinkSync(path.resolve(__dirname, '..', 'static', product.image))
-        fileName = uuid.v4() + ".jpg"
-        imageFile.mv(path.resolve(__dirname, '..', 'static', fileName))
+        try {
+          if (!product.image.includes('http')) fs.unlinkSync(path.resolve(__dirname, '..', 'static', product.image))
+          fileName = uuid.v4() + ".jpg"
+          imageFile.mv(path.resolve(__dirname, '..', 'static', fileName))
+        } catch (e) {
+          fileName = uuid.v4() + ".jpg"
+          imageFile.mv(path.resolve(__dirname, '..', 'static', fileName))
+        }
       }
       await product.update({title: title, description: description, image: imageFile ? fileName : image, price: price, weight: weight, categoryId: categoryId, typeId: typeId})
       const productItem = await product.getIngredients()
