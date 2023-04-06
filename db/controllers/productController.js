@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {Product, Ingredient} = require('../models/models')
+const {Product, Ingredient, IngredientProduct} = require('../models/models')
 const {createProductValidation} = require('../validations/product/createProductValidation')
 const {updateProductValidation} = require('../validations/product/updateProductValidation')
 const uuid = require('uuid')
@@ -10,6 +10,15 @@ class ProductController {
   async getProducts(req, res) {
     try {
       const products = await Product.findAll({ include: ["category", "type"] });
+      return res.json(products)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async getProductsWithIngredients(req, res) {
+    try {
+      const products = await Product.findAll({ include: ["category", "type", {model: Ingredient, through: IngredientProduct}] });
       return res.json(products)
     } catch (e) {
       console.log(e)

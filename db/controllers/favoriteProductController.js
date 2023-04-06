@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {FavoriteProduct, FavoriteProductProduct, User} = require('../models/models')
+const {FavoriteProduct, FavoriteProductProduct, User, Product, Ingredient, IngredientProduct} = require('../models/models')
 const {createFavoriteProductsValidation} = require('../validations/favoriteProducts/createFavoriteProductsValidation')
 const {deleteFavoriteProductsValidation} = require('../validations/favoriteProducts/deleteFavoriteProductsValidation')
 
@@ -30,7 +30,7 @@ class FavoriteProductController {
       const {chatId} = req.params
       const user = await User.findOne({where: {chatId: chatId}})
       const favoriteProductItem = await FavoriteProduct.findOne({where: {userId: user.id}})
-      const favoriteProductProducts = await FavoriteProductProduct.findAll({where: {favoriteProductId: favoriteProductItem.id}, include: ['favorite_product', 'product']})
+      const favoriteProductProducts = await FavoriteProductProduct.findAll({where: {favoriteProductId: favoriteProductItem.id}, include: ['favorite_product', {model: Product, include: ["category", "type", {model: Ingredient, through: IngredientProduct}]}]})
       return res.json(favoriteProductProducts)
     } catch (e) {
       console.log(e)
