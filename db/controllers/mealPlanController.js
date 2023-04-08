@@ -114,7 +114,7 @@ class MealPlanController {
 
       const {order_id, meal_plan_id, price, products} = req.body
       if (!await MealPlan.findOne({where: {orderId: order_id}})) return res.json('Ошибка');
-
+      // return  console.log(products)
       for (let productItems in products) {
         for(let product in products[productItems]) {
           if (productItems === 'Понедельник') {
