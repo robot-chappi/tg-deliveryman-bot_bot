@@ -53,19 +53,23 @@ class OrderController {
   async createOrder(req, res, next) {
 // mealPlan
     try {
+      console.log(req.body)
       const {error} = createOrderValidation(req.body);
       if(error) {
         return next(ApiError.badRequest('Что-то введено не верно'))
       }
+      console.log(222)
       const {chatId, fullname, phoneNumber, address, wish, price, isComplete, isPaid, category_id, user_id, typeOrderId} = req.body
       const findOrder = await Order.findAll({where: {chatId: chatId}})
       findOrder.forEach(i => {
         if (i.isPaid !== true) return res.json({message: 'Заказ уже сушествует, удалите его или оплатите'})
       })
-      const order = await Order.create({chatId, fullname, phoneNumber, address, wish, isComplete, isPaid, userId: user_id, typeOrderId: typeOrderId, mealplan: {categoryId: category_id, price: price}}, {include: [{
+      console.log(333)
+      const order = await Order.create({chatId, fullname, phoneNumber, address, wish, isComplete, isPaid, userId: user_id, typeOrderId: typeOrderId, mealplan: {categoryId: category_id, price: Number(price)}}, {include: [{
           model: MealPlan,
           as: 'mealplan'
         }]})
+      console.log(444)
       return res.json(order);
     } catch (e) {
       console.log(e)

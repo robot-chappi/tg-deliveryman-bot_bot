@@ -111,8 +111,8 @@ class MealPlanController {
       if(error) {
         return next(ApiError.badRequest('Не указаны правильно данные'))
       }
-      const {order_id, meal_plan_id, price, products} = req.body
 
+      const {order_id, meal_plan_id, price, products} = req.body
       if (!await MealPlan.findOne({where: {orderId: order_id}})) return res.json('Ошибка');
 
       for (let productItems in products) {
@@ -141,7 +141,7 @@ class MealPlanController {
         }
       }
 
-      if (price !== null) await MealPlan.update({price: price}, {where: {orderId: order_id}})
+      if (price !== null) await MealPlan.update({price: Number(price)}, {where: {orderId: order_id}})
 
       return res.json('Готово');
     } catch (e) {
