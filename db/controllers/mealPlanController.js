@@ -20,8 +20,9 @@ class MealPlanController {
 
   async getOrderMealPlanProducts(req, res) {
     try {
-      const {orderId} = req.params
-      const mealPlanItem = await MealPlan.findOne({where: {orderId: orderId}})
+      const {chatId} = req.params
+      const order = await Order.findOne({where: {chatId: chatId, isPaid: false}})
+      const mealPlanItem = await MealPlan.findOne({where: {orderId: order.id}})
       const mealPlanProducts = await MealPlanProduct.findAll({where: {mealplanId: mealPlanItem.id}, include: ['mealplan', 'product']})
 
       let beautyPlan = {
@@ -107,14 +108,9 @@ class MealPlanController {
 
   async createOrderMealPlanProducts(req, res, next) {
     try {
-      const {error} = createOrderMealPlanProductsValidation(req.body);
-      if(error) {
-        return next(ApiError.badRequest('Не указаны правильно данные'))
-      }
-
       const {order_id, meal_plan_id, price, products} = req.body
       if (!await MealPlan.findOne({where: {orderId: order_id}})) return res.json('Ошибка');
-      // return  console.log(products)
+
       for (let productItems in products) {
         for(let product in products[productItems]) {
           if (productItems === 'Понедельник') {

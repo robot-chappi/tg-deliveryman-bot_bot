@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {Order, MealPlan, MealPlanProduct} = require('../models/models')
+const {Order, MealPlan, MealPlanProduct, Product, Ingredient, IngredientProduct} = require('../models/models')
 const {createOrderValidation} = require('../validations/order/createOrderValidation')
 const {updateOrderValidation} = require('../validations/order/updateOrderValidation')
 
@@ -18,7 +18,8 @@ class OrderController {
     try {
       const {chatId} = req.params
 
-      const order = await Order.findOne({where: {chatId: chatId, isPaid: false}, include: ["user", "type_order", "mealplan"]})
+      const order = await Order.findOne({where: {chatId: chatId, isPaid: false}, include: ["user", "type_order", {model: MealPlan, include: ["category"]}]})
+
       // if (!order) return res.json({message: 'Не найдено'})
 
       return res.json(order)
@@ -51,25 +52,22 @@ class OrderController {
   }
 
   async createOrder(req, res, next) {
-// mealPlan
     try {
-      console.log(req.body)
       const {error} = createOrderValidation(req.body);
       if(error) {
         return next(ApiError.badRequest('Что-то введено не верно'))
       }
-      console.log(222)
       const {chatId, fullname, phoneNumber, address, wish, price, isComplete, isPaid, category_id, user_id, typeOrderId} = req.body
       const findOrder = await Order.findAll({where: {chatId: chatId}})
       findOrder.forEach(i => {
         if (i.isPaid !== true) return res.json({message: 'Заказ уже сушествует, удалите его или оплатите'})
       })
-      console.log(333)
+
       const order = await Order.create({chatId, fullname, phoneNumber, address, wish, isComplete, isPaid, userId: user_id, typeOrderId: typeOrderId, mealplan: {categoryId: category_id, price: Number(price)}}, {include: [{
           model: MealPlan,
           as: 'mealplan'
         }]})
-      console.log(444)
+
       return res.json(order);
     } catch (e) {
       console.log(e)
@@ -128,16 +126,17 @@ class OrderController {
   async deleteUserOrder(req, res) {
     try {
       const {chatId} = req.params
-      // you have to add method where mealPlanProduct deletes too
+
       const order = await Order.findOne({where: {chatId: chatId, isPaid: false}})
 
       if (!order) return res.json({message: 'Заказа такого нету', status: 'error'})
+
       let mealPlanId;
-      await MealPlan.findOne({where: {orderId: order.id}}).then(item => {
-        mealPlanId = item['id']
-        return item.destroy()
+      await MealPlan.findOne({where: {orderId: order.id}}).then(data => {
+        mealPlanId = data['id']
       })
       await MealPlanProduct.destroy({where: {mealplanId: mealPlanId}})
+      await MealPlan.destroy({where: {orderId: order.id}})
       await order.destroy();
 
       return res.json({message: 'Успешно удалено'})

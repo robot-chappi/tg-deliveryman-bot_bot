@@ -5,7 +5,7 @@ exports.createOrderMealPlanProductsValidation = (data) => {
     meal_plan_id: Joi.string(),
     order_id: Joi.string(),
     price: Joi.string().allow(null),
-    products: Joi.any(),
+    products: Joi.any()
 
     // meal_plan_id: Joi.number(),
     // order_id: Joi.number(),
