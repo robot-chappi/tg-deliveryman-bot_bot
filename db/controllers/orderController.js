@@ -59,9 +59,15 @@ class OrderController {
       }
       const {chatId, fullname, phoneNumber, address, wish, price, isComplete, isPaid, category_id, user_id, typeOrderId} = req.body
       const findOrder = await Order.findAll({where: {chatId: chatId}})
+
+      let end = false;
       findOrder.forEach(i => {
-        if (i.isPaid !== true) return res.json({message: 'Заказ уже сушествует, удалите его или оплатите'})
+        if (i.isPaid !== true) return end = true;
       })
+
+      if (end) {
+        return res.json({message: 'Заказ уже сушествует, удалите его или оплатите', error: true})
+      }
 
       const order = await Order.create({chatId, fullname, phoneNumber, address, wish, isComplete, isPaid, userId: user_id, typeOrderId: typeOrderId, mealplan: {categoryId: category_id, price: Number(price)}}, {include: [{
           model: MealPlan,
