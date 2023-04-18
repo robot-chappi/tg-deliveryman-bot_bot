@@ -14,6 +14,15 @@ class OrderController {
     }
   }
 
+  async getCompletedOrders(req, res) {
+    try {
+      const orders = await Order.findAll({where: {isComplete: true} , include: ["user", "type_order"]})
+      return res.json(orders)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async getUserOrder(req, res) {
     try {
       const {chatId} = req.params

@@ -70,10 +70,10 @@ class ProductController {
 
   async createProduct(req, res, next) {
     try {
-      const {error} = createProductValidation(req.body);
-      if(error) {
-        return next(ApiError.badRequest('Что-то введено не верно'))
-      }
+      // const {error} = createProductValidation(req.body);
+      // if(error) {
+      //   return next(ApiError.badRequest('Что-то введено не верно'))
+      // }
       const {title, image, weight, description, price, categoryId, typeId, ingredients} = req.body
       const imageFile = req.files ? req.files['imageFile'] : false
 
