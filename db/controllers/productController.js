@@ -25,6 +25,16 @@ class ProductController {
     }
   }
 
+  async getProductWithIngredients(req, res) {
+    try {
+      const {id} = req.params
+      const product = await Product.findOne({where: {id: id}, include: ["category", "type", {model: Ingredient, through: IngredientProduct}]})
+      return res.json(product)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async getProduct(req, res) {
     try {
       const {id} = req.params
@@ -70,12 +80,13 @@ class ProductController {
 
   async createProduct(req, res, next) {
     try {
-      // const {error} = createProductValidation(req.body);
-      // if(error) {
-      //   return next(ApiError.badRequest('Что-то введено не верно'))
-      // }
-      const {title, image, weight, description, price, categoryId, typeId, ingredients} = req.body
+      const {error} = createProductValidation(req.body);
+      if(error) {
+        return next(ApiError.badRequest(error))
+      }
+      let {title, image, weight, description, price, categoryId, typeId, ingredients} = req.body
       const imageFile = req.files ? req.files['imageFile'] : false
+      ingredients = JSON.parse(ingredients);
 
       let fileName;
       if (imageFile) {
@@ -88,6 +99,7 @@ class ProductController {
         const ingredient = await Ingredient.findOne({where: {id: i.id}})
         product.addIngredient(ingredient)
       }
+
       return res.json(product);
     } catch (e) {
       next(ApiError.badRequest('Что-то введено не верно | ' + e))

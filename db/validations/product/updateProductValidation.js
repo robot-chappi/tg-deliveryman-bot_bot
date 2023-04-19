@@ -4,8 +4,9 @@ exports.updateProductValidation = (data) => {
   const schema = Joi.object({
     title: Joi.string().min(3),
     weight: Joi.number(),
-    image: Joi.string().allow(null),
-    description: Joi.string().min(15),
+    image: Joi.any().allow(null),
+    imageFile: Joi.any().allow(null),
+    description: Joi.string(),
     price: Joi.number(),
     categoryId: Joi.number(),
     typeId: Joi.number(),

@@ -5,6 +5,7 @@ exports.createProductValidation = (data) => {
     title: Joi.any(),
     weight: Joi.any(),
     image: Joi.any().allow(null),
+    imageFile: Joi.any().allow(null),
     description: Joi.any(),
     price: Joi.any(),
     categoryId: Joi.any(),
