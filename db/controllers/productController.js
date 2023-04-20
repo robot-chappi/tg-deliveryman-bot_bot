@@ -135,13 +135,13 @@ class ProductController {
     try {
       const {error} = updateProductValidation(req.body);
       if(error) {
-        return next(ApiError.badRequest('Что-то не правильно введено'))
+        return next(ApiError.badRequest(error))
       }
 
       const {id} = req.params
-      const {title, weight, description, image, price, categoryId, typeId, ingredients} = req.body
+      let {title, weight, description, image, price, categoryId, typeId, ingredients} = req.body
       const imageFile = req.files ? req.files['imageFile'] : false
-
+      ingredients = JSON.parse(ingredients);
       const product = await Product.findOne({where: {id: id}})
 
       if (!product.image.includes('http') && image.includes('http')) {
@@ -165,7 +165,6 @@ class ProductController {
       }
       await product.update({title: title, description: description, image: imageFile ? fileName : image, price: price, weight: weight, categoryId: categoryId, typeId: typeId})
       const productItem = await product.getIngredients()
-
 
       if (productItem.length > ingredients.length || productItem.length < ingredients.length || productItem.length === ingredients.length) {
         if (productItem.length !== 0) {
