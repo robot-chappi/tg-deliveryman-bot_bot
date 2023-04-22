@@ -35,7 +35,8 @@ class TariffController {
       if(error) {
         return next(ApiError.badRequest('Что-то введено не верно'))
       }
-      const {title, description, price, discount, privileges} = req.body
+      let {title, description, price, discount, privileges} = req.body
+      privileges = JSON.parse(privileges)
       const tariff = await Tariff.create({title, description, price, discount})
       for (const i of privileges) {
         const privilege = await Privilege.findOne({where: {id: i.id}})
