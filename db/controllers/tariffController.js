@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {Tariff, Privilege} = require('../models/models')
+const {Tariff, Privilege, PrivilegeTariff} = require('../models/models')
 const {createTariffValidation} = require('../validations/tariff/createTariffValidation')
 const {updateTariffValidation} = require('../validations/tariff/updateTariffValidation')
 
@@ -28,6 +28,18 @@ class TariffController {
       console.log(e)
     }
   }
+
+  async getTariffWithPrivileges(req, res) {
+    try {
+      const {id} = req.params
+      const tariff = await Tariff.findOne({where: {id: id}, include: [{model: Privilege, through: PrivilegeTariff}]})
+
+      return res.json(tariff)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
 
   async createTariff(req, res, next) {
     try {
@@ -75,7 +87,8 @@ class TariffController {
       }
 
       const {id} = req.params
-      const {title, description, price, discount, privileges} = req.body
+      let {title, description, price, discount, privileges} = req.body
+      privileges = JSON.parse(privileges);
       const tariff = await Tariff.findOne({where: {id: id}})
 
       await tariff.update({title: title, description: description, price: price, discount: discount})

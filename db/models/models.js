@@ -223,6 +223,7 @@ module.exports = {
   Role,
   Tariff,
   Privilege,
+  PrivilegeTariff,
   Category,
   Type,
   Product,
