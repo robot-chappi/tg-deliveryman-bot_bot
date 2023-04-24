@@ -5,6 +5,8 @@ const checkRoleMiddleware = require('../middleware/checkRoleMiddleware')
 const router = new Router()
 
 router.post('/', userController.createUser)
+router.get('/all/information/:id', checkRoleMiddleware(['admin']), userController.getUserWithAllInformation)
+router.get('/pagination', checkRoleMiddleware(['admin']), userController.paginationUser)
 router.get('/me/:chatId', userController.getMe)
 router.get('/me/favoriteproduct/:chatId', userController.getMyFavoriteProduct)
 router.get('/me/favoriteingredient/:chatId', userController.getMyFavoriteIngredient)

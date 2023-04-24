@@ -1,5 +1,8 @@
 const ApiError = require('../error/ApiError')
-const {User, FavoriteProduct, UnlovedIngredient, FavoriteIngredient, Tariff} = require('../models/models')
+const {User, FavoriteProduct, UnlovedIngredient, FavoriteIngredient, Tariff, PrivilegeTariff, Order, MealPlan,
+  MealPlanProduct, FavoriteProductProduct, FavoriteIngredientIngredient, UnlovedIngredientIngredient, Product,
+  Ingredient, Role
+} = require('../models/models')
 const {createUserValidation} = require('../validations/user/createUserValidation')
 const {updateUserValidation} = require('../validations/user/updateUserValidation')
 const jwt = require('jsonwebtoken')
@@ -17,6 +20,33 @@ class UserController {
     try {
       const users = await User.findAll({ include: ["role", "tariff"] });
       return res.json(users)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async paginationUser(req, res) {
+    try {
+      let {roleId, tariffId, limit, page} = req.query
+      page = page || 1
+      limit = limit || 3
+      let offset = page * limit - limit
+      let users;
+      if (!roleId && !tariffId) {
+        users = await User.findAndCountAll({limit: limit, offset: offset, include: ["role", "tariff"]});
+      }
+      if (roleId && !tariffId) {
+        users = await User.findAndCountAll({where: {roleId: roleId}, limit: limit, offset: offset, include: ["role", "tariff"]});
+      }
+      if (!roleId && tariffId) {
+        users = await User.findAndCountAll({where: {tariffId: tariffId}, limit: limit, offset: offset, include: ["role", "tariff"]});
+      }
+      if (roleId && tariffId) {
+        users = await User.findAndCountAll({where: {roleId: roleId, tariffId: tariffId}, limit: limit, offset: offset, include: ["role", "tariff"]});
+      }
+
+      return res.json(users);
+
     } catch (e) {
       console.log(e)
     }
@@ -44,6 +74,24 @@ class UserController {
       const user = await User.findOne({where: {id: id}, include: ["role", "tariff"]})
 
       return res.json(user)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async getUserWithAllInformation(req, res) {
+    try {
+      const {id} = req.params
+      //{model: FavoriteIngredient, include: [{model: FavoriteIngredientIngredient, include: [{model: Ingredient}]}]}, {model: Role}, {model: Tariff}, {model: FavoriteProduct, attributes: ['id', 'userId'], include: [{model: FavoriteProductProduct, attributes: ['id', 'productId'], include: [{model: Product, attributes: ['id', 'title']}]}]},
+      const initialUser = await User.findOne({where: {id: id}, include: [ {model: UnlovedIngredient, attributes: ['id', 'userId'], include: [{model: UnlovedIngredientIngredient, attributes: ['id', 'ingredientId'], include: [{model: Ingredient}]}]}, {model: FavoriteIngredient, include: [{model: FavoriteIngredientIngredient, include: [{model: Ingredient}]}]}], raw: true, nest: true, logging: true})
+      // return console.log(initialUser)
+      const orders = await Order.findAll({where: {userId: initialUser.id}, include: {model: MealPlan, include: [{model: MealPlanProduct, include: [{model: Product}]}]}})
+      if (initialUser) {
+        if (orders.length >= 1) return res.json({user: initialUser, orders: orders})
+        return res.json(initialUser)
+      }
+
+      return res.json({message: 'Пользователя нету', status: 'error'})
     } catch (e) {
       console.log(e)
     }
@@ -103,6 +151,20 @@ class UserController {
         return next(ApiError.badRequest('Что-то введено не верно'))
       }
       const {chatId, name, phoneNumber, address, roleId, tariffId} = req.body
+      // const user = await User.create({chatId, name, phoneNumber, address, roleId: roleId, tariffId: tariffId, favorite_product: {}, unloved_ingredient: {}, favorite_ingredient: {}}, {include: [{
+      //     model: FavoriteProduct,
+      //     as: 'favorite_product'
+      //   },{
+      //     model: UnlovedIngredient,
+      //     as: 'unloved_ingredient'
+      //   },{
+      //     model: FavoriteIngredient,
+      //     as: 'favorite_ingredient'
+      //   }]})
+      //
+      // return res.json(user);
+      const foundUser = await User.findOne({where: {chatId: chatId}})
+      if (foundUser) return res.json({message: 'Такой пользователь уже есть!', status: 'error'})
       const user = await User.create({chatId, name, phoneNumber, address, roleId: roleId, tariffId: tariffId, favorite_product: {}, unloved_ingredient: {}, favorite_ingredient: {}}, {include: [{
           model: FavoriteProduct,
           as: 'favorite_product'
