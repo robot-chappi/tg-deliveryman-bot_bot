@@ -1,11 +1,12 @@
 const ApiError = require('../error/ApiError')
 const {User, FavoriteProduct, UnlovedIngredient, FavoriteIngredient, Tariff, PrivilegeTariff, Order, MealPlan,
   MealPlanProduct, FavoriteProductProduct, FavoriteIngredientIngredient, UnlovedIngredientIngredient, Product,
-  Ingredient, Role
+  Ingredient, Role, Category, TypeOrder
 } = require('../models/models')
 const {createUserValidation} = require('../validations/user/createUserValidation')
 const {updateUserValidation} = require('../validations/user/updateUserValidation')
 const jwt = require('jsonwebtoken')
+const {orders} = require('../../src/mockdata/mockdata')
 
 const generateJwt = (id, chatId, role) => {
   return jwt.sign(
@@ -82,13 +83,14 @@ class UserController {
   async getUserWithAllInformation(req, res) {
     try {
       const {id} = req.params
-      //{model: FavoriteIngredient, include: [{model: FavoriteIngredientIngredient, include: [{model: Ingredient}]}]}, {model: Role}, {model: Tariff}, {model: FavoriteProduct, attributes: ['id', 'userId'], include: [{model: FavoriteProductProduct, attributes: ['id', 'productId'], include: [{model: Product, attributes: ['id', 'title']}]}]},
-      const initialUser = await User.findOne({where: {id: id}, include: [ {model: UnlovedIngredient, attributes: ['id', 'userId'], include: [{model: UnlovedIngredientIngredient, attributes: ['id', 'ingredientId'], include: [{model: Ingredient}]}]}, {model: FavoriteIngredient, include: [{model: FavoriteIngredientIngredient, include: [{model: Ingredient}]}]}], raw: true, nest: true, logging: true})
-      // return console.log(initialUser)
-      const orders = await Order.findAll({where: {userId: initialUser.id}, include: {model: MealPlan, include: [{model: MealPlanProduct, include: [{model: Product}]}]}})
+      let initialUser = await User.findOne({where: {id: id}, include: ['role', 'tariff']})
+      const orders = await Order.findAll({where: {userId: initialUser.id}, include: [{model: MealPlan, include: [{model: MealPlanProduct, include: [{model: Product}]}, {model: Category}]}, {model: TypeOrder}]})
       if (initialUser) {
-        if (orders.length >= 1) return res.json({user: initialUser, orders: orders})
-        return res.json(initialUser)
+        const favoriteIngredientItem = await FavoriteIngredient.findOne({where: {userId: id}, include: [{model: FavoriteIngredientIngredient, include: [{model: Ingredient}]}]})
+        const unlovedIngredientItem = await UnlovedIngredient.findOne({where: {userId: id}, include: [{model: UnlovedIngredientIngredient, include: [{model: Ingredient}]}]})
+        const favoriteProductItem = await FavoriteProduct.findOne({where: {userId: id}, include: [{model: FavoriteProductProduct, include: [{model: Product}]}]})
+        if (orders.length >= 1) return res.json({user: initialUser, favorite_ingredient: favoriteIngredientItem, favorite_product: favoriteProductItem, unloved_ingredient: unlovedIngredientItem, orders: orders})
+        return res.json({user: initialUser, favorite_ingredient: favoriteIngredientItem, favorite_product: favoriteProductItem, unloved_ingredient: unlovedIngredientItem})
       }
 
       return res.json({message: 'Пользователя нету', status: 'error'})
@@ -217,7 +219,8 @@ class UserController {
         return next(ApiError.badRequest('Что-то не правильно введено'))
       }
 
-      const {chatId, name, phoneNumber, address, roleId, tariffId} = req.body
+      let {chatId, name, phoneNumber, address, roleId, tariffId, orders} = req.body
+      orders = JSON.parse(orders)
       await User.update({chatId: chatId, name: name, phoneNumber: phoneNumber, address: address, roleId: roleId, tariffId: tariffId}, {where: {chatId: chatId}})
 
       return res.json({message: 'Обновлено!'});
@@ -235,6 +238,7 @@ class UserController {
 
       const {id} = req.params
       const {chatId, name, phoneNumber, address, roleId, tariffId} = req.body
+      return console.log(orders)
       await User.update({chatId: chatId, name: name, phoneNumber: phoneNumber, address: address, roleId: roleId, tariffId: tariffId}, {where: {id: id}})
 
       return res.json({message: 'Обновлено!'});
