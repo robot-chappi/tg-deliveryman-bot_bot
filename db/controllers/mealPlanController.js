@@ -1,11 +1,8 @@
 const ApiError = require('../error/ApiError')
-const {MealPlan, MealPlanProduct, FavoriteIngredient, FavoriteIngredientIngredient, Order} = require('../models/models')
+const {MealPlan, MealPlanProduct, Order} = require('../models/models')
 const {createMealPlanProductsValidation} = require('../validations/mealPlanProducts/createMealPlanProductsValidation')
 const {deleteMealPlanProductsValidation} = require('../validations/mealPlanProducts/deleteMealPlanProductsValidation')
 const {createMealPlanProductValidation} = require('../validations/mealPlanProducts/createMealPlanProductValidation')
-const {updateOrderValidation} = require('../validations/order/updateOrderValidation')
-const {where} = require('sequelize')
-const {createOrderMealPlanProductsValidation} = require('../validations/mealPlanProducts/createOrderMealPlanProductsValidation')
 
 class MealPlanController {
   async getMealPlanProducts(req, res) {

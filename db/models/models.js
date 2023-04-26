@@ -7,8 +7,6 @@ const User = sequelize.define('user', {
   name: {type: DataTypes.STRING, allowNull: false},
   phoneNumber: {type: DataTypes.STRING, allowNull: false},
   address: {type: DataTypes.STRING, allowNull: false},
-  // role: {type: DataTypes.INTEGER},
-  // tariff: {type: DataTypes.INTEGER},
 })
 
 const Role = sequelize.define('role', {
@@ -28,7 +26,6 @@ const Tariff = sequelize.define('tariff', {
   description: {type: DataTypes.STRING, allowNull: false},
   price: {type: DataTypes.INTEGER, defaultValue: 0},
   discount: {type: DataTypes.INTEGER, defaultValue: 0},
-  // privileges
 })
 
 const Faq = sequelize.define('faq', {
@@ -110,13 +107,6 @@ const Order = sequelize.define('order', {
   wish: {type: DataTypes.STRING},
   isComplete: {type: DataTypes.BOOLEAN, defaultValue: false},
   isPaid: {type: DataTypes.BOOLEAN, defaultValue: false}
-  // From User (userId)
-  // favoriteCategory
-  // favoriteIngredients
-  // unlovedIngredients
-  // FavoriteFood
-
-  // MealPlan
 })
 
 const Product = sequelize.define('product', {
@@ -126,9 +116,6 @@ const Product = sequelize.define('product', {
   image: {type: DataTypes.STRING, allowNull: false},
   description: {type: DataTypes.TEXT, allowNull: false},
   price: {type: DataTypes.INTEGER, allowNull: false}
-  // type
-  // category
-  // ingredients
 })
 
 const PrivilegeTariff = sequelize.define('privilege_tariff', {
@@ -181,7 +168,6 @@ UnlovedIngredientIngredient.belongsTo(UnlovedIngredient)
 Ingredient.hasMany(UnlovedIngredientIngredient);
 UnlovedIngredientIngredient.belongsTo(Ingredient)
 
-// order
 Category.hasMany(MealPlan)
 MealPlan.belongsTo(Category);
 
@@ -196,7 +182,6 @@ Review.belongsTo(User)
 
 
 Role.hasMany(User)
-// default user
 User.belongsTo(Role);
 
 Category.hasMany(Product)
@@ -206,7 +191,6 @@ Type.hasMany(Product)
 Product.belongsTo(Type);
 
 Tariff.hasMany(User)
-// default 1 (ЭКО)
 User.belongsTo(Tariff);
 
 

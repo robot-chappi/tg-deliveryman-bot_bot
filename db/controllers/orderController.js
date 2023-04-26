@@ -29,8 +29,6 @@ class OrderController {
 
       const order = await Order.findOne({where: {chatId: chatId, isPaid: false}, include: ["user", "type_order", {model: MealPlan, include: ["category"]}]})
 
-      // if (!order) return res.json({message: 'Не найдено'})
-
       return res.json(order)
     } catch (e) {
       console.log(e)
@@ -41,7 +39,6 @@ class OrderController {
     try {
       const {chatId} = req.params
       const orders = await Order.findAll({where: {chatId: chatId}, include: ["user", "type_order"]})
-      // if (!orders) return res.json({message: 'Не найдено'})
 
       return res.json(orders)
     } catch (e) {
@@ -93,7 +90,7 @@ class OrderController {
     try {
       const {id} = req.params
       const order = await Order.findOne({where: {id: id}})
-      await order.update({isComplete: order['isComplete'] ? true : false})
+      await order.update({isComplete: order['isComplete'] ? false : true})
 
       return res.json({message: 'Обновлено!'});
     } catch (e) {
@@ -105,7 +102,7 @@ class OrderController {
     try {
       const {id} = req.params
       const order = await Order.findOne({where: {id: id}})
-      await order.update({isPaid: order['isPaid'] ? true : false})
+      await order.update({isPaid: order['isPaid'] ? false : true})
 
       return res.json({message: 'Обновлено!'});
     } catch (e) {
@@ -116,19 +113,15 @@ class OrderController {
   async deleteUserOrders(req, res) {
     try {
       const {chatId} = req.params
-      // you have to add method where mealPlanProduct deletes too
       const orders = await Order.findAll({where: {chatId: chatId}})
 
       if (orders.length < 1) return res.json({message: 'Заказов нету', status: 'error'})
-      let mealPlanId;
       orders.forEach(async (i) => {
-        await MealPlan.findOne({where: {orderId: i.id}}).then(item => {
-          mealPlanId = item['id']
-          return item.destroy()
-        })
-        await MealPlanProduct.destroy({where: {mealplanId: mealPlanId}})
+        const mealPlanItem = await MealPlan.findOne({where: {orderId: i.id}})
+        await MealPlanProduct.destroy({where: {mealplanId: mealPlanItem.id}})
 
         const orderItem = await Order.findOne({where: {id: i.id}})
+        await mealPlanItem.destroy();
         await orderItem.destroy();
       })
 

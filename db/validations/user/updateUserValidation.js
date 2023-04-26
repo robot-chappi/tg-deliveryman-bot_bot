@@ -8,7 +8,6 @@ exports.updateUserValidation = (data) => {
     address: Joi.string(),
     roleId: Joi.number(),
     tariffId: Joi.number(),
-    orders: Joi.array(),
   })
 
   return schema.validate(data);

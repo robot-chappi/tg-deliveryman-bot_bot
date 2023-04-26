@@ -1,7 +1,6 @@
 const ApiError = require('../error/ApiError')
 const {FavoriteProduct, FavoriteProductProduct, User, Product, Ingredient, IngredientProduct} = require('../models/models')
 const {createFavoriteProductsValidation} = require('../validations/favoriteProducts/createFavoriteProductsValidation')
-const {deleteFavoriteProductsValidation} = require('../validations/favoriteProducts/deleteFavoriteProductsValidation')
 
 class FavoriteProductController {
   async getFavoriteProducts(req, res) {

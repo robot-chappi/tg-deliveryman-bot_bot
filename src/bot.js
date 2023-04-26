@@ -10,7 +10,6 @@ import {getTariffItems} from './http/tariffAPI'
 import {getMealPlan, getOrder, getOrders, deleteOrders, deleteOrder} from './http/orderAPI'
 import {deleteUserReviews, getUserReviews} from './http/reviewAPI'
 import deleteReviewFsm from './modules/deleteReviewFsm'
-// import sequelize from '../db/db'
 const express = require('express')
 const cors = require('cors')
 const fileUpload = require('express-fileupload')
@@ -19,7 +18,6 @@ const models = require('../db/models/models')
 const router = require('../db/routes/index')
 const errorHandler = require('../db/middleware/ErrorHandlingMiddleware')
 const path = require('path')
-// const {order} = require('../src/mockdata/mockdata')
 
 export default class Bot {
   constructor(token) {
@@ -50,50 +48,6 @@ export default class Bot {
     this.client.on('message', async (message) => {
       const chatId = message.chat.id
       const text = message.text
-      const user = {name: 'Иван Иванов Иванович', phone: '+79201563122', address: 'Россия, Московская обл., Москва, ул. Пушкина, д. 20'}
-      // const order = {tariff: 'Эко', category: 'Правильное питание', food: {
-      //   monday: [
-      //     {name: 'Пицца', price: 150, quantity: 1}, {name: 'Роллы', price: 200, quantity: 1}, {name: 'Печенье', price: 250, quantity: 1}
-      //   ],
-      //   tuesday: [
-      //     {name: 'Каша', price: 150, quantity: 1}, {name: 'Роллы', price: 200, quantity: 1}, {name: 'Печенье', price: 250, quantity: 1}
-      //   ],
-      //   wednesday: [
-      //     {name: 'Суп', price: 150, quantity: 1}, {name: 'Роллы', price: 200, quantity: 1}, {name: 'Печенье', price: 250, quantity: 1}
-      //   ],
-      //   thursday: [
-      //     {name: 'Салат', price: 150, quantity: 1}, {name: 'Роллы', price: 200, quantity: 1}, {name: 'Печенье', price: 250, quantity: 1}
-      //   ],
-      //   friday: [
-      //     {name: 'Яблоко', price: 150, quantity: 1}, {name: 'Роллы', price: 200, quantity: 1}, {name: 'Печенье', price: 250, quantity: 1}
-      //   ],
-      //   saturday: [
-      //     {name: 'Груша', price: 150, quantity: 1}, {name: 'Роллы', price: 200, quantity: 1}, {name: 'Печенье', price: 250, quantity: 1}
-      //   ],
-      //   sunday: [
-      //     {name: 'Апельсин', price: 150, quantity: 1}, {name: 'Роллы', price: 200, quantity: 1}, {name: 'Печенье', price: 250, quantity: 1}
-      //   ]
-      // }, full_price_per_month: 2000, payment: 0}
-      // const tariff = [
-      //   {name: 'ПРО 🥇', description: '', features: [
-      //       {text: 'Быстрая доставка'},
-      //       {text: 'Личный куратор по еде'},
-      //       {text: 'Что-то еще...'},
-      //       {text: 'Что-то еще...'},
-      //   ], price_per_month: 3000},
-      //   {name: 'СРЕДНИЙ 🥈', description: '', features: [
-      //       {text: 'Быстрая доставка'},
-      //       {text: 'Куратор по еде'},
-      //       {text: 'Что-то еще...'},
-      //       {text: 'Что-то еще...'},
-      //   ], price_per_month: 1000},
-      //   {name: 'ЭКО 🥉', description: '', features: [
-      //       {text: 'Что-то еще...'},
-      //       {text: 'Что-то еще...'},
-      //       {text: 'Что-то еще...'},
-      //       {text: 'Что-то еще...'},
-      //   ], price_per_month: 500}
-      // ]
 
       try {
         if (text === '/start') {

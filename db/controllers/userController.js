@@ -1,12 +1,11 @@
 const ApiError = require('../error/ApiError')
 const {User, FavoriteProduct, UnlovedIngredient, FavoriteIngredient, Tariff, PrivilegeTariff, Order, MealPlan,
   MealPlanProduct, FavoriteProductProduct, FavoriteIngredientIngredient, UnlovedIngredientIngredient, Product,
-  Ingredient, Role, Category, TypeOrder
+  Ingredient, Category, TypeOrder
 } = require('../models/models')
 const {createUserValidation} = require('../validations/user/createUserValidation')
 const {updateUserValidation} = require('../validations/user/updateUserValidation')
 const jwt = require('jsonwebtoken')
-const {orders} = require('../../src/mockdata/mockdata')
 
 const generateJwt = (id, chatId, role) => {
   return jwt.sign(
@@ -146,25 +145,13 @@ class UserController {
   }
 
   async createUser(req, res, next) {
-    // mealPlan
     try {
       const {error} = createUserValidation(req.body);
       if(error) {
         return next(ApiError.badRequest('Что-то введено не верно'))
       }
       const {chatId, name, phoneNumber, address, roleId, tariffId} = req.body
-      // const user = await User.create({chatId, name, phoneNumber, address, roleId: roleId, tariffId: tariffId, favorite_product: {}, unloved_ingredient: {}, favorite_ingredient: {}}, {include: [{
-      //     model: FavoriteProduct,
-      //     as: 'favorite_product'
-      //   },{
-      //     model: UnlovedIngredient,
-      //     as: 'unloved_ingredient'
-      //   },{
-      //     model: FavoriteIngredient,
-      //     as: 'favorite_ingredient'
-      //   }]})
-      //
-      // return res.json(user);
+
       const foundUser = await User.findOne({where: {chatId: chatId}})
       if (foundUser) return res.json({message: 'Такой пользователь уже есть!', status: 'error'})
       const user = await User.create({chatId, name, phoneNumber, address, roleId: roleId, tariffId: tariffId, favorite_product: {}, unloved_ingredient: {}, favorite_ingredient: {}}, {include: [{
@@ -187,11 +174,40 @@ class UserController {
   async deleteUser(req, res) {
     try {
       const {id} = req.params
-      // you have to add method where favoriteproductproduct deletes too
-      await FavoriteProduct.destroy({where: {userId: id}})
-      await UnlovedIngredient.destroy({where: {userId: id}})
-      await FavoriteIngredient.destroy({where: {userId: id}})
-      await User.destroy({where: {id: id}})
+      const favoriteProductItem = await FavoriteProduct.findOne({where: {userId: id}})
+      if (favoriteProductItem) {
+        await FavoriteProductProduct.destroy({where: {favoriteProductId: favoriteProductItem.id}})
+        await favoriteProductItem.destroy()
+      }
+
+      const unlovedIngredientItem = await UnlovedIngredient.findOne({where: {userId: id}})
+      if (unlovedIngredientItem) {
+        await UnlovedIngredientIngredient.destroy({where: {unlovedIngredientId: unlovedIngredientItem.id}})
+        await unlovedIngredientItem.destroy()
+      }
+
+      const favoriteIngredientItem = await FavoriteIngredient.findOne({where: {userId: id}})
+      if (favoriteIngredientItem) {
+        await FavoriteIngredientIngredient.destroy({where: {favoriteIngredientId: favoriteIngredientItem.id}})
+        await favoriteIngredientItem.destroy()
+      }
+
+      const orders = await Order.findAll({where: {userId: id}})
+
+      if (orders.length < 1) {
+        await User.destroy({where: {id: id}})
+      } else {
+        orders.forEach(async (i) => {
+          const mealPlanItem = await MealPlan.findOne({where: {orderId: i.id}})
+          await MealPlanProduct.destroy({where: {mealplanId: mealPlanItem.id}})
+
+          const orderItem = await Order.findOne({where: {id: i.id}})
+          await mealPlanItem.destroy();
+          await orderItem.destroy();
+        })
+
+        await User.destroy({where: {id: id}})
+      }
 
       return res.json({message: 'Успешно удалено'})
     } catch (e) {
@@ -219,8 +235,7 @@ class UserController {
         return next(ApiError.badRequest('Что-то не правильно введено'))
       }
 
-      let {chatId, name, phoneNumber, address, roleId, tariffId, orders} = req.body
-      orders = JSON.parse(orders)
+      let {chatId, name, phoneNumber, address, roleId, tariffId} = req.body
       await User.update({chatId: chatId, name: name, phoneNumber: phoneNumber, address: address, roleId: roleId, tariffId: tariffId}, {where: {chatId: chatId}})
 
       return res.json({message: 'Обновлено!'});
@@ -238,7 +253,7 @@ class UserController {
 
       const {id} = req.params
       const {chatId, name, phoneNumber, address, roleId, tariffId} = req.body
-      return console.log(orders)
+
       await User.update({chatId: chatId, name: name, phoneNumber: phoneNumber, address: address, roleId: roleId, tariffId: tariffId}, {where: {id: id}})
 
       return res.json({message: 'Обновлено!'});

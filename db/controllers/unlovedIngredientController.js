@@ -1,7 +1,6 @@
 const ApiError = require('../error/ApiError')
 const {UnlovedIngredientIngredient, UnlovedIngredient, User, FavoriteIngredientIngredient} = require('../models/models')
 const {createUnlovedIngredientsValidation} = require('../validations/unlovedIngredients/createUnlovedIngredientsValidation')
-const {deleteUnlovedIngredientsValidation} = require('../validations/unlovedIngredients/deleteUnlovedIngredientsValidation')
 
 class UnlovedIngredientController {
   async getUnlovedIngredients(req, res) {
